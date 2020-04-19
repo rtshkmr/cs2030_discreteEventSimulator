@@ -16,10 +16,10 @@ import java.util.PriorityQueue;
  */
 public class Manager {
 
-    private PriorityQueue<Customer> mainQueue;
-    private PriorityQueue<Event> queuedEvents;
+    private final PriorityQueue<Customer> mainQueue;
+    private final PriorityQueue<Event> queuedEvents;
     private Server[] myServers;
-    private RandomGenerator randomGenerator;
+    private final RandomGenerator randomGenerator;
 
 
     public Manager(int seed, int numServers, int qmax, int numArrivalEvents,
@@ -53,9 +53,15 @@ public class Manager {
     public void operate() {
         while (!this.mainQueue.isEmpty()) {
             Customer currentCustomer = mainQueue.poll();
+            System.out.println(">>>>>>>>> MANAGER PICKS FROM MAIN QUEUE, CUSTOMER: " + currentCustomer);
+            System.out.println("_____________________________________________________ ");
+
             registerEvent(currentCustomer, mainQueue);
             if (!isTerminalState(currentCustomer)) {
-                this.mainQueue.add(changeCustomerState(currentCustomer));
+                Optional<Customer> changed = changeCustomerState(currentCustomer);
+                System.out.println("++++++++++  MANAGER ADDS TO  MAIN QUEUE, CUSTOMER: " + changed);
+//                this.mainQueue.add(changed);
+                changed.ifPresentOrElse(this.mainQueue::add, () -> this.mainQueue.add(currentCustomer));
             }
             //            if (isTerminalState(currentCustomer)) {
 //                handleTerminalState(currentCustomer);
@@ -78,12 +84,14 @@ public class Manager {
      * @return A modified form of the Customer after the Manager has provided sufficient
      * assistance to help the customer make a decision and change its state.
      */
-    private Customer changeCustomerState(Customer c) {
+    private Optional<Customer> changeCustomerState(Customer c) {
         if (isArrivesState(c)) {
             return handleArrivalState(c);
         } else {
             Customer decided = null;
             if (isServedState(c)) {
+
+
                 double completionTime = this.getCompletionTime(c.getPresentTime());
                 decided = c.fromServedToDone(completionTime);
                 // todo: the server is actually working on this customer now,
@@ -96,10 +104,16 @@ public class Manager {
                 this.myServers[s.serverID - 1] = s.actuallyServeCustomer(decided);
             }
             if (isWaitsState(c)) {
-                decided = c.fromWaitsToServed();
-                // servers needn't bother with this state change
+                Server s = this.myServers[c.serverID - 1];
+                System.out.println("XXX keep waiting? " +
+                                       "assigned server has queuesize: " + s.waitingQueue.size());
+                System.out.println("    assigned server's head has customer " + s.waitingQueue.peek());
+                decided = c.fromWaitsToServed(s);
+
+                    // need to somehow tell them that they need to keep waiting.
+//                }
             }
-            return decided;
+            return Optional.ofNullable(decided);
         }
     }
 
@@ -109,7 +123,7 @@ public class Manager {
      * @param c customer that has just arrived.
      * @return Customer that either gets served immediately, waits or leaves.
      */
-    private Customer handleArrivalState(Customer c) {
+    private Optional<Customer> handleArrivalState(Customer c) {
         Server[] queriedServers = queryServers(c);
 
         System.out.println("\t---- outcome of querying the servers: ");
@@ -136,7 +150,7 @@ public class Manager {
             System.out.println("\t\t!!! customer leaves: ");
             changedCustomer = c.fromArrivesToLeaves();
         }
-        return changedCustomer;
+        return Optional.of(changedCustomer);
     }
 
 
@@ -177,7 +191,7 @@ public class Manager {
             shortestServer.orElse(null)};
     }
 
-    // todo: do nothing if terminal state? omg.
+    // todo: do nothing if terminal state? omg. YES DO NOTHING.
     private void handleTerminalState(Customer c) {
         if (isDoneState(c)) {
             // todo: [handle done state] maybe it affects the server?

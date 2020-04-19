@@ -120,6 +120,7 @@ public class Server {
         assert this.nextAvailableTime == waitingCustomer.getNextTime();
         Queue<Customer> newQueue = new LinkedList<>(this.waitingQueue);
         newQueue.add(waitingCustomer);
+        System.out.println("addToWaitQueue(), newQueueSize:" +newQueue.size());
         return new Server(this.serverID, this.qmax, this.isIdle,
             this.nextAvailableTime, newQueue);
     }
@@ -146,9 +147,9 @@ public class Server {
             assert this.waitingQueue.peek().getID() == doneCustomer.getID();
             Queue<Customer> newQueue = new LinkedList<>(this.waitingQueue);
             newQueue.remove();
+            System.out.println("actuallyServeCustomer(), newQueueSize:" +newQueue.size());
             return new Server(this.serverID,this.qmax, newQueue.isEmpty(),
                 doneCustomer.getPresentTime(), newQueue);
-
         }
     }
 

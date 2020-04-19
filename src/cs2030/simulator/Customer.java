@@ -129,11 +129,27 @@ public class Customer implements Comparable<Customer> {
      *
      * @return Customer Customer that is done waiting and will be served next.
      */
-    protected Customer fromWaitsToServed() {
+    protected Customer fromWaitsToServed(Server s) {
         assert (this.customerStatus.equals("waits"));
+
+        // if the server has more than 1 person waiting,
+        if(s.waitingQueue.size() > 1) {
+
+        }
+        double newPresentTime;
+        Customer head = s.waitingQueue.peek();
+        if(this.equals(head)) {
+            newPresentTime = this.nextTime; // will be served next;
+        } else {
+            newPresentTime = s.nextAvailableTime;
+        }
+
+
+
+        // will def be served if there's no one else waiting:
         return new Customer(this.myID,
-            this.nextTime,
-            this.nextTime,
+            newPresentTime,
+            newPresentTime,
             "served",
             this.serverID);
     }
