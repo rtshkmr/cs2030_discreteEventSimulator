@@ -24,6 +24,17 @@ public class Manager {
 
     public Manager(int seed, int numServers, int qmax, int numArrivalEvents,
                    double lambda, double mu) {
+
+        // init check print statements:
+        System.out.println("====== initcheck ============");
+        System.out.println("seed : " + seed);
+        System.out.println("numServers : " + numServers);
+        System.out.println("qmax : " + qmax);
+        System.out.println("numArrivalEvents: " + numArrivalEvents);
+        System.out.println("lambda: " + lambda);
+        System.out.println("mu: " + mu);
+        System.out.println("====== initcheck ============");
+
         this.mainQueue = new PriorityQueue<>();
         this.queuedEvents = new PriorityQueue<>();
         double rho = 0.0;
@@ -100,24 +111,29 @@ public class Manager {
      */
     private Customer handleArrivalState(Customer c) {
         Server[] queriedServers = queryServers(c);
+
         System.out.println("\t---- outcome of querying the servers: ");
         for(Server s : queriedServers) {
             System.out.println("\t" + s);
         }
+
+
         Customer changedCustomer; // to be assigned based on query results
         if (queriedServers[0] != null) { // idleServer exists:
             Server s = queriedServers[0];
+            System.out.println("\t\t!!!customer immediately assigned to " + s);
             changedCustomer = c.fromArrivesToServed(s.serverID);
             this.myServers[s.serverID - 1] = s.serveUponArrival();
         } else if (queriedServers[1] != null) { // queueableServer exists:
             Server x = queriedServers[1];
-            System.out.println("!!! to queue at this server: " + x);
+            System.out.println("\t\t!!! to queue at this server: " + x);
             changedCustomer = c.fromArrivesToWaits(x.nextAvailableTime, x.serverID);
             // todo: the queable server will be non-idle so that remains,
             //       the server's nextavailable time won't change either
             //       server will add this waiting customer
             this.myServers[x.serverID - 1] = x.addToWaitQueue(changedCustomer);
         } else { // create terminal state of leaving, server needn't bother:
+            System.out.println("\t\t!!! customer leaves: ");
             changedCustomer = c.fromArrivesToLeaves();
         }
         return changedCustomer;
@@ -139,6 +155,8 @@ public class Manager {
 //            System.out.println("\t\tisIdle?" + ans1);
 //            System.out.println("\t\tcanQueue?" + ans2);
             System.out.println("\tSERVER STATUS WHEN QUERYING: " + s);
+            System.out.println("\t\t****server qsize / qmax: " + s.waitingQueue.size() + "/"+ s.qmax);
+
             if (!foundIdle && s.isIdle(c)) { // look for idle servers:
                 foundIdle = true;
                 idleServer = Optional.of(s);

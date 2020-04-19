@@ -37,9 +37,10 @@ public class Server {
      * @param isIdle            whether the server is idle
      * @param nextAvailableTime when the server is free next.
      */
-    protected Server(int serverID, boolean isIdle, double nextAvailableTime,
+    protected Server(int serverID, int qmax, boolean isIdle, double nextAvailableTime,
                      Queue<Customer> waitingQueue) {
         this.serverID = serverID;
+        this.qmax = qmax;
         this.isIdle = isIdle;
         this.nextAvailableTime = nextAvailableTime;
         this.waitingQueue = waitingQueue;
@@ -98,7 +99,7 @@ public class Server {
      */
     public Server serveUponArrival() {
         assert this.waitingQueue.isEmpty();
-        return new Server(this.serverID, false,
+        return new Server(this.serverID, this.qmax,false,
             this.nextAvailableTime,
             this.waitingQueue);
     }
@@ -119,7 +120,7 @@ public class Server {
         assert this.nextAvailableTime == waitingCustomer.getNextTime();
         Queue<Customer> newQueue = new LinkedList<>(this.waitingQueue);
         newQueue.add(waitingCustomer);
-        return new Server(this.serverID, this.isIdle,
+        return new Server(this.serverID, this.qmax, this.isIdle,
             this.nextAvailableTime, newQueue);
     }
 
@@ -138,14 +139,14 @@ public class Server {
     public Server actuallyServeCustomer(Customer doneCustomer) {
         assert !this.isIdle;
         if (this.waitingQueue.isEmpty()) { // means the doneCustomer wasn't waiting
-            return new Server(this.serverID, true,
+            return new Server(this.serverID, this.qmax,true,
                 doneCustomer.getPresentTime(), this.waitingQueue);
         } else { // doneCustomer was waiting, we modify the queue as well
             // todo: we compare idx first, if possible change to using the equals method.
             assert this.waitingQueue.peek().getID() == doneCustomer.getID();
             Queue<Customer> newQueue = new LinkedList<>(this.waitingQueue);
             newQueue.remove();
-            return new Server(this.serverID, newQueue.isEmpty(),
+            return new Server(this.serverID,this.qmax, newQueue.isEmpty(),
                 doneCustomer.getPresentTime(), newQueue);
 
         }
@@ -158,7 +159,7 @@ public class Server {
      * @return a new instance of Server with an updated state.
      */
     public Server doneServingCustomer() {
-        return new Server(this.serverID,
+        return new Server(this.serverID,this.qmax,
             !this.waitingQueue.isEmpty(), // server won't be idle if there are ppl in the queue
             this.nextAvailableTime,
             this.waitingQueue);
@@ -168,6 +169,7 @@ public class Server {
     @Override
     public String toString() {
         return "Server [serverID " + this.serverID
+                   + "| qmax: " + this.qmax
                    + "| isIdle? " + this.isIdle
                    + "| waitingQueueSize " + this.waitingQueue.size()
                    + "| nextAvailableTime " + this.nextAvailableTime + "]";

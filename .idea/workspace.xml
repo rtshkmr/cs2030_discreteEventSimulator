@@ -3,13 +3,11 @@
   <component name="ChangeListManager">
     <list default="true" id="5d6383db-6683-4606-9f61-424c2254a7b7" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Main.class" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/cs2030/simulator/Customer.class" beforeDir="false" afterPath="$PROJECT_DIR$/src/cs2030/simulator/Customer.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/cs2030/simulator/Customer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/cs2030/simulator/Customer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/cs2030/simulator/Event.class" beforeDir="false" afterPath="$PROJECT_DIR$/src/cs2030/simulator/Event.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/cs2030/simulator/Manager.class" beforeDir="false" afterPath="$PROJECT_DIR$/src/cs2030/simulator/Manager.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/cs2030/simulator/Customer.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/cs2030/simulator/Event.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/cs2030/simulator/Manager.class" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/cs2030/simulator/Manager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/cs2030/simulator/Manager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/cs2030/simulator/Server.class" beforeDir="false" afterPath="$PROJECT_DIR$/src/cs2030/simulator/Server.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/cs2030/simulator/Server.class" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/cs2030/simulator/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/cs2030/simulator/Server.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -35,7 +33,6 @@
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
-    <option name="showExcludedFiles" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
@@ -63,18 +60,30 @@
       <option name="project" value="LOCAL" />
       <updated>1587268601663</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="need to update canQueue">
+      <created>1587279598297</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1587279598297</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Main seems to be done properly, Manager and Customer interaction seems to be okay, will have to settle the Server class now, and then settle the Manager-Server interaction." />
-    <option name="LAST_COMMIT_MESSAGE" value="Main seems to be done properly, Manager and Customer interaction seems to be okay, will have to settle the Server class now, and then settle the Manager-Server interaction." />
+    <MESSAGE value="need to update canQueue" />
+    <option name="LAST_COMMIT_MESSAGE" value="need to update canQueue" />
   </component>
   <component name="WindowStateProjectService">
     <state x="546" y="1577" width="943" height="677" key="#Project_Structure" timestamp="1587169443651">
       <screen x="0" y="1376" width="1920" height="1080" />
     </state>
     <state x="546" y="1577" width="943" height="677" key="#Project_Structure/0.321.1920.1055/0.1376.1920.1080/1920.0.1080.1920@0.1376.1920.1080" timestamp="1587169443651" />
+    <state x="643" y="291" width="624" height="523" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog" timestamp="1587280061592">
+      <screen x="0" y="25" width="1920" height="1055" />
+    </state>
+    <state x="643" y="291" width="624" height="523" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/0.25.1920.1055@0.25.1920.1055" timestamp="1587280061592" />
     <state x="469" y="25" width="972" height="1055" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog" timestamp="1587258371613">
       <screen x="0" y="25" width="1920" height="1055" />
     </state>
@@ -83,10 +92,10 @@
       <screen x="0" y="25" width="1920" height="1055" />
     </state>
     <state x="693" y="302" width="524" height="501" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.25.1920.1055@0.25.1920.1055" timestamp="1587265430277" />
-    <state x="536" y="147" width="838" height="811" key="CommitChangelistDialog2" timestamp="1587268601541">
+    <state x="536" y="147" width="838" height="811" key="CommitChangelistDialog2" timestamp="1587279598228">
       <screen x="0" y="25" width="1920" height="1055" />
     </state>
-    <state x="536" y="147" width="838" height="811" key="CommitChangelistDialog2/0.25.1920.1055@0.25.1920.1055" timestamp="1587268601541" />
+    <state x="536" y="147" width="838" height="811" key="CommitChangelistDialog2/0.25.1920.1055@0.25.1920.1055" timestamp="1587279598228" />
     <state x="359" y="294" width="1191" height="518" key="caller.chooser.dialog" timestamp="1587261195414">
       <screen x="0" y="25" width="1920" height="1055" />
     </state>
