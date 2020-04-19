@@ -1,9 +1,5 @@
-
-import cs2030.simulator.*;
 import cs2030.simulator.Manager;
-
 import java.util.Scanner;
-import java.util.PriorityQueue;
 
 /**
  * Takes in a previously unknown number of doubles, reads them as Arrival Timings
@@ -19,22 +15,17 @@ public class Main {
      * @param args Cli arguments
      */
     public static void main(String[] args) {
-        /*
-         takes in unknown number of user inputs:
-         todo: settle the new input types:
-        */
         Scanner sc = new Scanner(System.in);
-        int baseSeed = sc.nextInt();
+        int seed = sc.nextInt();
         int numServers = sc.nextInt();
-        int Qmax = sc.nextInt();
+        int qmax = sc.nextInt();
         int numArrivalEvents = sc.nextInt(); // aka number of customers expected to enter
         double lambda = sc.nextDouble();
         double mu = sc.nextDouble();
         assert (lambda > 0 && mu > 0);
-        Manager myManager = new Manager(new PriorityQueue<>(),
-                                        baseSeed,
+        Manager myManager = new Manager(seed,
                                         numServers,
-                                        Qmax,
+                                        qmax,
                                         numArrivalEvents,
                                         lambda,
                                         mu);
