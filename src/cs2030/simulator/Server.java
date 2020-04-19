@@ -1,212 +1,174 @@
 package cs2030.simulator;
-
 import java.util.LinkedList;
 import java.util.Queue;
 
 /**
  * A server is an employee of the Manager. Server shall tell the Manager if he/she's
- * idle, and if so, if he/she has anyone being served next. Also, a server
+ * idle, and if so, if he/she has a filled up waitingQueue. Also, a server
  * will change its state when various actions happen with respect to the actions
  * they do on the customers.
  */
 public class Server {
-    // fields:
-    static double defaultAvailabilityTime = 0;
 
     protected int serverID;
     private boolean isIdle;
-    private boolean hasCustomerWaiting;
     protected double nextAvailableTime;
     protected int qmax;
-    protected Queue<Customer> waitingQueue;
-    // todo: consider encapsulating fixed queue logic into a class. Also might have
-//           to store queues inside Manager to avoid cyclic dependency, but this
-//           gonna be a quick fix if that problem arises.
-
-
-    //public constructors for now:
+    protected Queue<Customer> waitingQueue; // to restrict size to qmax
+    // todo: might have to store queues inside manager to avoid cyclic dependency?
 
     /**
-     * Usual constructor for a server.
+     * Usual constructor for a server, with empty queue.
      *
      * @param serverID the unique ID that a server shall have.
      */
-    // normal instantiation of server:
-    public Server(int serverID, int qmax) {
+    protected Server(int serverID, int qmax) {
         this.serverID = serverID;
         this.qmax = qmax;
         this.isIdle = true;
-        this.hasCustomerWaiting = false;
-        this.nextAvailableTime = defaultAvailabilityTime;
+        this.nextAvailableTime = 0; // start availability will be at 0
         this.waitingQueue = new LinkedList<>();
     }
 
     /**
-     * Constructs a new instance of Server whenever there's a change in state for the
-     * server.
+     * Constructs changed Server State.
      *
-     * @param serverID           the unique ID for the server
-     * @param isIdle             whether the server is idle
-     * @param hasCustomerWaiting whether any customer is waiting to be served by the Server
-     * @param nextAvailableTime  when the server is free next.
+     * @param serverID          the unique ID for the server
+     * @param isIdle            whether the server is idle
+     * @param nextAvailableTime when the server is free next.
      */
-    // change of state for Server: serves or makes customer wait
-    public Server(int serverID,
-                  boolean isIdle,
-                  boolean hasCustomerWaiting,
-                  double nextAvailableTime,
-                  Queue<Customer> waitingQueue) {
+    protected Server(int serverID, boolean isIdle, double nextAvailableTime,
+                     Queue<Customer> waitingQueue) {
         this.serverID = serverID;
         this.isIdle = isIdle;
-        this.hasCustomerWaiting = hasCustomerWaiting;
         this.nextAvailableTime = nextAvailableTime;
         this.waitingQueue = waitingQueue;
     }
 
 
     /**
-     * Server tells if a potential customer can be served immediately by him/her.
+     * Server reports if he/she is idle, hence can serve a customer immediately.
      *
-     * @param potentialCustomer a customer that might potentially be served immediately.
      * @return true if Server can serve the potentialCustomer immediately
+     * @param c time compared to is a customer's time
      */
-    // check if server can serve a customer immediately or next:
-    public boolean canServeImmediately(Customer potentialCustomer) {
-
-//        return this.waitingQueue.isEmpty();
-            boolean ans = this.isIdle
-                              && this.waitingQueue.isEmpty()
-                              && potentialCustomer.getPresentTime() >= this.nextAvailableTime;
-            System.out.println(this);
-        System.out.println("canServeImmediately( "+ potentialCustomer + ") ? " +  ans);
+    // todo: this feels wrong, can't wrap my head around it.
+    protected boolean isIdle(Customer c) {
+        boolean ans =  this.isIdle && c.getPresentTime() >= this.nextAvailableTime;
+        System.out.println("\t\tisIdle?" + ans);
         return ans;
+//
+//
+////        return this.waitingQueue.isEmpty();
+//        boolean ans = this.isIdle
+//                          && this.waitingQueue.isEmpty()
+//                          && potentialCustomer.getPresentTime() >= this.nextAvailableTime;
+//        System.out.println(this);
+//        System.out.println("canServeImmediately( " + potentialCustomer + ") ? " + ans);
+//        return ans;
 
 //        return this.isIdle && potentialCustomer.getTiming() >= this.nextAvailableTime;
     }
 
     /**
-     * Server tells if a potential customer can be served next by him/her if the customer waits.
+     * Server reports it's possible to queue if queue isn't full.
      *
-     * @param potentialCustomer a customer that might potentially be served next if he/she waits.
      * @return true if Server can serve the potentialCustomer next if customer waits.
+     * @param c timing provided by the customer's presense.
      */
-    public boolean canServeNext(Customer potentialCustomer) {
-//        return !this.isIdle && !this.hasCustomerWaiting;
-        boolean ans =  /*!this.isIdle*/!canServeImmediately(potentialCustomer) && this.waitingQueue.size() < this.qmax;
-        // todo: a customer can wait for a server if the server's queue is not full
-        System.out.println(this);
-        System.out.println("canServeNext( "+ potentialCustomer + ") ? " +  ans);
-        return ans;
+    protected boolean canQueue(Customer c) {
+        boolean ans = c.getPresentTime() < this.nextAvailableTime
+                        && this.waitingQueue.size() < this.qmax;
+        System.out.println("\t\tcanQueue?" + ans);
+          return ans;
+//        return !this.isIdle(c) && this.waitingQueue.size() < qmax;
+////        return !this.isIdle && !this.hasCustomerWaiting;
+//        boolean ans =  /*!this.isIdle*/!isIdle(potentialCustomer) && this.waitingQueue.size() < this.qmax;
+//        // todo: a customer can wait for a server if the server's queue is not full
+//        System.out.println(this);
+//        System.out.println("canServeNext( " + potentialCustomer + ") ? " + ans);
+//        return ans;
     }
 
     /**
-     * Server serves the customer now when asked by the Manager.
+     * Server serves customer upon arrival and state will change to not idle.
+     * Only the idle attribute shall be modified (switched to false) by this method.
      *
-     * @param decidedCustomer the Customer currently being referred to.
-     * @return a new instance of Server with an updated state.
+     * @return a new instance of Server with an updated idle state.
      */
-    public Server serveCustomerNow(Customer decidedCustomer) {
-
-        Server s = new Server(this.serverID,
-            false, false,
+    public Server serveUponArrival() {
+        assert this.waitingQueue.isEmpty();
+        return new Server(this.serverID, false,
             this.nextAvailableTime,
             this.waitingQueue);
-        System.out.println("\t\t### changing server[serveCustomerNow]: from " + this + "to " + s);
-        return s;
-    }
-    // todo: when a customer is being served now, they WONT be added to the queue
-
-    /**
-     * Server is done serving customer.
-     *
-     * @return a new instance of Server with an updated state.
-     */
-    public Server doneServingCustomer() {
-        Server s =  new Server(this.serverID,
-            !this.waitingQueue.isEmpty(), // server won't be idle if there are ppl in the queue
-            this.waitingQueue.size() > 1,
-            // todo: check if need to update the next available time.
-            this.nextAvailableTime,
-            this.waitingQueue);
-        System.out.println("\t\t### changing server[doneServingCustomer]: from " + this + "to " + s);
-        return s;
     }
 
     /**
-     * If Customer is willing to wait, the Server lets the customer wait.
+     * Server adds the customer to his queue, queue is updated!
+     * Only the queue attribute will be modified by this.
      *
      * @param waitingCustomer a customer that's waiting.
-     * @return a new instance of Server with an updated state.
+     * @return a new instance of Server with an updated queue.
      */
     // todo: note that nextAvailableTime shall only be updated once a customer is being served
+    //       ie. in the finallyServe method.
     //       case1: when customer served immediately
     //       case2: when can finally serveCustomer that's waiting (?)
-    public Server letCustomerWait(Customer waitingCustomer) {
+    public Server addToWaitQueue(Customer waitingCustomer) {
         assert !this.isIdle;
         assert this.nextAvailableTime == waitingCustomer.getNextTime();
         Queue<Customer> newQueue = new LinkedList<>(this.waitingQueue);
         newQueue.add(waitingCustomer);
-       Server s =  new Server(this.serverID,
-            false, true,
-            waitingCustomer.getNextTime(), newQueue);
-        System.out.println("\t\t### changing server [letCustomerWait()]: from " + this + "to " + s);
-        return s;
+        return new Server(this.serverID, this.isIdle,
+            this.nextAvailableTime, newQueue);
     }
-    // next available after the waiting customer has been served
+
 
     /**
-     * Server serves a waiting customer finally, once the previous Customer has been served.
+     * Actually serves a customer.
+     * Changes the nextAvailableTime, which is the nextTime for Customer, as
+     * determined by the Manager.
+     * Might change queue:
+     * 1. if doneCustomer was initially waiting in queue, then free up queue space
+     * 2. else no change to the queue
      *
      * @param doneCustomer a customer that's waiting.
      * @return a new instance of Server with an updated state.
      */
-    public Server finallyServeCustomer(Customer doneCustomer) {
-//        assert (this.hasCustomerWaiting);
-        // see whether need to remove from the queue (if doneCustomer had been
-        // waiting) or no need to remove.
-        Customer headCustomer = this.waitingQueue.peek();
-        // #error possible?
-        if (doneCustomer.equals(headCustomer)) {
-            System.out.println("this customer used to wait before");
-        } else {
-            System.out.println("this customer immediately got served");
-        }
-
-
-        if(doneCustomer.equals(headCustomer)) {
+    public Server actuallyServeCustomer(Customer doneCustomer) {
+        assert !this.isIdle;
+        if (this.waitingQueue.isEmpty()) { // means the doneCustomer wasn't waiting
+            return new Server(this.serverID, true,
+                doneCustomer.getPresentTime(), this.waitingQueue);
+        } else { // doneCustomer was waiting, we modify the queue as well
+            // todo: we compare idx first, if possible change to using the equals method.
+            assert this.waitingQueue.peek().getID() == doneCustomer.getID();
             Queue<Customer> newQueue = new LinkedList<>(this.waitingQueue);
             newQueue.remove();
-            Server s =  new Server(this.serverID,
-                               false,
-                                !newQueue.isEmpty(),
-                                doneCustomer.getPresentTime(),
-                                newQueue);
-            System.out.println("\t\t### changing server[finallyServeCustomer() [waitingguy]]: from " + this + "to " + s);
-            return s;
-        }
-        Server s =  new Server(this.serverID,
-                    true, !this.waitingQueue.isEmpty(),
-                     doneCustomer.getNextTime(),
-                      this.waitingQueue);
-        System.out.println("\t\t### changing server[finallyServeCustomer() [straight guy]]: from " + this + "to " + s);
-        return s;
-        //        Customer headCustomer = newQueue.remove();
-//        assert doneCustomer.getTiming() == headCustomer.getNextTiming();
-//        return new Server(this.serverID, false,
-//            this.nextAvailableTime >= doneWaitingCustomer.getTiming(),
-//            this.nextAvailableTime);
+            return new Server(this.serverID, newQueue.isEmpty(),
+                doneCustomer.getPresentTime(), newQueue);
 
-//        return new Server(this.serverID,
-//            false, newQueue.isEmpty(),
-//            doneCustomer.getNextTiming(), // completion time is when server is next avail.
-//            newQueue);
+        }
     }
+
+    /**
+     * Server is done serving customer.
+     * Only idleness might change.
+     *
+     * @return a new instance of Server with an updated state.
+     */
+    public Server doneServingCustomer() {
+        return new Server(this.serverID,
+            !this.waitingQueue.isEmpty(), // server won't be idle if there are ppl in the queue
+            this.nextAvailableTime,
+            this.waitingQueue);
+    }
+
 
     @Override
     public String toString() {
         return "Server [serverID " + this.serverID
                    + "| isIdle? " + this.isIdle
-                   + "| hasCustomerWaiting? " + this.hasCustomerWaiting
                    + "| waitingQueueSize " + this.waitingQueue.size()
                    + "| nextAvailableTime " + this.nextAvailableTime + "]";
     }

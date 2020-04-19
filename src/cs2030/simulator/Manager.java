@@ -81,6 +81,8 @@ public class Manager {
                 //       2. the server needs to check if the customer being
                 //          served right now was waiting in the queue, if so,
                 //          then frees up the queue space.
+                Server s = this.myServers[c.serverID -1];
+                this.myServers[s.serverID - 1] = s.actuallyServeCustomer(decided);
             }
             if (isWaitsState(c)) {
                 decided = c.fromWaitsToServed();
@@ -97,45 +99,56 @@ public class Manager {
      * @return Customer that either gets served immediately, waits or leaves.
      */
     private Customer handleArrivalState(Customer c) {
-        Server[] queriedServers = queryServers();
-        Customer decided; // to be assigned based on query results
+        Server[] queriedServers = queryServers(c);
+        System.out.println("\t---- outcome of querying the servers: ");
+        for(Server s : queriedServers) {
+            System.out.println("\t" + s);
+        }
+        Customer changedCustomer; // to be assigned based on query results
         if (queriedServers[0] != null) { // idleServer exists:
-            decided = c.fromArrivesToServed(queriedServers[0].serverID);
-            // todo: arrival to Served [customer + server changes]
-            //       the idle server will now be non-idle and won't have
-            //       anyone waiting either.
+            Server s = queriedServers[0];
+            changedCustomer = c.fromArrivesToServed(s.serverID);
+            this.myServers[s.serverID - 1] = s.serveUponArrival();
         } else if (queriedServers[1] != null) { // queueableServer exists:
-            Server s = queriedServers[1];
-            decided = c.fromArrivesToWaits(s.nextAvailableTime, s.serverID);
+            Server x = queriedServers[1];
+            System.out.println("!!! to queue at this server: " + x);
+            changedCustomer = c.fromArrivesToWaits(x.nextAvailableTime, x.serverID);
             // todo: the queable server will be non-idle so that remains,
             //       the server's nextavailable time won't change either
             //       server will add this waiting customer
+            this.myServers[x.serverID - 1] = x.addToWaitQueue(changedCustomer);
         } else { // create terminal state of leaving, server needn't bother:
-            decided = c.fromArrivesToLeaves();
+            changedCustomer = c.fromArrivesToLeaves();
         }
-        return decided;
+        return changedCustomer;
     }
 
 
     // todo: check this logic when fixing the servers...
-    private Server[] queryServers() {
+    private Server[] queryServers(Customer c) {
         // gather relevant servers:
         Optional<Server> idleServer = Optional.empty(),
             queueableServer = Optional.empty(),
             shortestServer = Optional.empty();
         boolean foundIdle = false, foundQueueable = false;
         // todo: boolean checks whether s.isIdle and s.canQueue
+        System.out.println("customer: " + c);
         for (Server s : this.myServers) {
-            if (!foundIdle && s.isIdle) { // look for idle servers:
+//            boolean ans1 = s.isIdle(c);
+//            boolean ans2 = s.canQueue(c);
+//            System.out.println("\t\tisIdle?" + ans1);
+//            System.out.println("\t\tcanQueue?" + ans2);
+            System.out.println("\tSERVER STATUS WHEN QUERYING: " + s);
+            if (!foundIdle && s.isIdle(c)) { // look for idle servers:
                 foundIdle = true;
                 idleServer = Optional.of(s);
             }
-            if (!foundQueueable && s.canQueue) { // look for queueable servers:
+            if (!foundIdle && !foundQueueable && s.canQueue(c)) { // look for queueable servers:
                 foundQueueable = true;
                 queueableServer = Optional.of(s);
-                shortestServer = Optional.of(s); // init
+                shortestServer = Optional.of(s); // init first
             }
-            if (foundQueueable) { // if possible find the shortest queue-server:
+            if (!foundIdle && foundQueueable && s.canQueue(c)) { // if possible find the shortest queue-server:
                 if (s.waitingQueue.size() < queueableServer.get().waitingQueue.size()) {
                     shortestServer = Optional.of(s);
                 }
@@ -151,7 +164,8 @@ public class Manager {
         if (isDoneState(c)) {
             // todo: [handle done state] maybe it affects the server?
             //       once done
-
+            Server s = this.myServers[c.serverID - 1];
+            this.myServers[s.serverID - 1] = s.doneServingCustomer();
         }
         // don't do anything if a customer leaves.
     }

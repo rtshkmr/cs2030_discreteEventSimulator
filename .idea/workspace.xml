@@ -2,10 +2,15 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5d6383db-6683-4606-9f61-424c2254a7b7" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Main.class" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/cs2030/simulator/Customer.class" beforeDir="false" afterPath="$PROJECT_DIR$/src/cs2030/simulator/Customer.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/cs2030/simulator/Customer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/cs2030/simulator/Customer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/cs2030/simulator/Event.class" beforeDir="false" afterPath="$PROJECT_DIR$/src/cs2030/simulator/Event.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/cs2030/simulator/Manager.class" beforeDir="false" afterPath="$PROJECT_DIR$/src/cs2030/simulator/Manager.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/cs2030/simulator/Manager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/cs2030/simulator/Manager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/cs2030/simulator/Server.class" beforeDir="false" afterPath="$PROJECT_DIR$/src/cs2030/simulator/Server.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/cs2030/simulator/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/cs2030/simulator/Server.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -16,6 +21,11 @@
     <option name="done" value="true" />
   </component>
   <component name="Git.Settings">
+    <option name="PREVIOUS_COMMIT_AUTHORS">
+      <list>
+        <option value="Ritesh Kumar &lt;ritesh@emerald.pink&gt;" />
+      </list>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectCodeStyleSettingsMigration">
@@ -46,7 +56,19 @@
       <option name="presentableId" value="Default" />
       <updated>1587168754541</updated>
     </task>
+    <task id="LOCAL-00001" summary="Main seems to be done properly, Manager and Customer interaction seems to be okay, will have to settle the Server class now, and then settle the Manager-Server interaction.">
+      <created>1587268601663</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1587268601663</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Main seems to be done properly, Manager and Customer interaction seems to be okay, will have to settle the Server class now, and then settle the Manager-Server interaction." />
+    <option name="LAST_COMMIT_MESSAGE" value="Main seems to be done properly, Manager and Customer interaction seems to be okay, will have to settle the Server class now, and then settle the Manager-Server interaction." />
   </component>
   <component name="WindowStateProjectService">
     <state x="546" y="1577" width="943" height="677" key="#Project_Structure" timestamp="1587169443651">
@@ -61,13 +83,25 @@
       <screen x="0" y="25" width="1920" height="1055" />
     </state>
     <state x="693" y="302" width="524" height="501" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.25.1920.1055@0.25.1920.1055" timestamp="1587265430277" />
+    <state x="536" y="147" width="838" height="811" key="CommitChangelistDialog2" timestamp="1587268601541">
+      <screen x="0" y="25" width="1920" height="1055" />
+    </state>
+    <state x="536" y="147" width="838" height="811" key="CommitChangelistDialog2/0.25.1920.1055@0.25.1920.1055" timestamp="1587268601541" />
     <state x="359" y="294" width="1191" height="518" key="caller.chooser.dialog" timestamp="1587261195414">
       <screen x="0" y="25" width="1920" height="1055" />
     </state>
     <state x="359" y="294" width="1191" height="518" key="caller.chooser.dialog/0.25.1920.1055@0.25.1920.1055" timestamp="1587261195414" />
-    <state x="623" y="257" width="672" height="678" key="search.everywhere.popup" timestamp="1587261964462">
+    <state x="100" y="125" width="1710" height="856" maximized="true" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1587279015811">
       <screen x="0" y="25" width="1920" height="1055" />
     </state>
-    <state x="623" y="257" width="672" height="678" key="search.everywhere.popup/0.25.1920.1055@0.25.1920.1055" timestamp="1587261964462" />
+    <state x="100" y="125" width="1710" height="856" maximized="true" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.25.1920.1055@0.25.1920.1055" timestamp="1587279015811" />
+    <state x="652" y="184" width="606" height="738" key="refactoring.ChangeSignatureDialog" timestamp="1587276161215">
+      <screen x="0" y="25" width="1920" height="1055" />
+    </state>
+    <state x="652" y="184" width="606" height="738" key="refactoring.ChangeSignatureDialog/0.25.1920.1055@0.25.1920.1055" timestamp="1587276161215" />
+    <state x="623" y="257" width="672" height="678" key="search.everywhere.popup" timestamp="1587278264640">
+      <screen x="0" y="25" width="1920" height="1055" />
+    </state>
+    <state x="623" y="257" width="672" height="678" key="search.everywhere.popup/0.25.1920.1055@0.25.1920.1055" timestamp="1587278264640" />
   </component>
 </project>

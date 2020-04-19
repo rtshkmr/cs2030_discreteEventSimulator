@@ -18,9 +18,9 @@ public class Customer implements Comparable<Customer> {
     // instance attributes:
     private final int myID;
     private final double presentTime;
-    private final double nextTime; // relevant when the person waits, when the person gets served,
-    private final String customerStatus; // lowercase string, future enumeration
-    protected int serverID; // NO_SERVER if not assigned, other wise assigned...
+    private final double nextTime;
+    private final String customerStatus; // lowercase string
+    protected int serverID; // NO_SERVER if unassigned
 
     /**
      * Constructs a Customer when the Customer enters.
