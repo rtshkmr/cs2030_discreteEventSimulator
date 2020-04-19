@@ -22,6 +22,7 @@ public class Customer implements Comparable<Customer> {
     private final String customerStatus; // lowercase string
     protected int serverID; // NO_SERVER if unassigned
     protected boolean firstWaits = true;
+    private final double entryTime;
 
     /**
      * Constructs a Customer when the Customer enters.
@@ -36,6 +37,7 @@ public class Customer implements Comparable<Customer> {
         this.nextTime = presentTime; // initially set as the same upon arival
         this.customerStatus = "arrives";
         this.serverID = NO_SERVER;
+        this.entryTime = presentTime;
     }
 
     /**
@@ -48,12 +50,13 @@ public class Customer implements Comparable<Customer> {
      * @param serverID           the Server assigned to this customer.
      */
     private Customer(int myID, double updatedPresentTime, double updatedNextTime,
-                     String newStatus, int serverID) {
+                     String newStatus, int serverID, double entryTime) {
         this.myID = myID;
         this.presentTime = updatedPresentTime;
         this.nextTime = updatedNextTime;
         this.customerStatus = newStatus;
         this.serverID = serverID;
+        this.entryTime = entryTime;
     }
 
 
@@ -99,7 +102,7 @@ public class Customer implements Comparable<Customer> {
     protected Customer fromArrivesToServed(int serverID) {
         // ARRIVES to SERVED (i.e served immediately)
         return new Customer(this.myID, this.presentTime, this.presentTime,
-            "served", serverID);
+            "served", serverID, this.entryTime);
     }
 
     /**
@@ -116,16 +119,16 @@ public class Customer implements Comparable<Customer> {
      * @return Customer Customer that waits.
      */
     protected Customer fromArrivesToWaits(double nextAvailableTime, int serverID) {
-        Customer.TotalWaitingTime += (nextAvailableTime - this.presentTime);
+//        Customer.TotalWaitingTime += (nextAvailableTime - this.presentTime);
         Customer.TotalWaitCounter++;
         return new Customer(this.myID, this.presentTime, nextAvailableTime,
-            "waits", serverID);
+            "waits", serverID, this.entryTime);
     }
     public Customer fromWaitsToWaits(Server assignedServer) {
         assert (this.customerStatus.equals("waits"));
-        Customer.TotalWaitingTime += (assignedServer.nextAvailableTime - this.presentTime);
+//        Customer.TotalWaitingTime += (assignedServer.nextAvailableTime - this.nextTime);
         Customer res =  new Customer(this.myID, assignedServer.nextAvailableTime,
-            assignedServer.nextAvailableTime,"waits", this.serverID);
+            assignedServer.nextAvailableTime,"waits", this.serverID, this.entryTime);
         if(firstWaits) {
             res.firstWaits = false;
         }
@@ -141,7 +144,8 @@ public class Customer implements Comparable<Customer> {
      */
     protected Customer fromWaitsToServed(Server s) {
         assert (this.customerStatus.equals("waits"));
-
+        //todo: manipulate waiting time here.
+        Customer.TotalWaitingTime += (s.nextAvailableTime - this.entryTime);
 //        // if the server has more than 1 person waiting,
 //        if(s.waitingQueue.size() > 1) {
 //
@@ -161,7 +165,7 @@ public class Customer implements Comparable<Customer> {
             s.nextAvailableTime,
             s.nextAvailableTime,
             "served",
-            this.serverID);
+            this.serverID, this.entryTime);
     }
 
     /*                        to terminal  state                               */
@@ -179,7 +183,7 @@ public class Customer implements Comparable<Customer> {
      */
     protected Customer fromServedToDone(double completionTime) {
         ++CustomersServed;
-        return new Customer(this.myID, completionTime, completionTime, "done", this.serverID);
+        return new Customer(this.myID, completionTime, completionTime, "done", this.serverID, this.entryTime);
     }
 
     /**
@@ -193,7 +197,7 @@ public class Customer implements Comparable<Customer> {
     protected Customer fromArrivesToLeaves() {
         Customer.CustomersLeft++;
         return new Customer(this.myID, this.presentTime, this.presentTime,
-            "leaves", NO_SERVER);
+            "leaves", NO_SERVER, this.entryTime);
     }
 
     //==========================================================================

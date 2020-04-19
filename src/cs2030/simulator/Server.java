@@ -10,11 +10,11 @@ import java.util.Queue;
  */
 public class Server {
 
-    protected int serverID;
-    private boolean isIdle;
-    protected double nextAvailableTime;
-    protected int qmax;
-    protected Queue<Customer> waitingQueue; // to restrict size to qmax
+    protected final int serverID;
+    private final boolean isIdle;
+    protected final double nextAvailableTime;
+    protected final int qmax;
+    protected final Queue<Customer> waitingQueue; // to restrict size to qmax
     // todo: might have to store queues inside manager to avoid cyclic dependency?
 
     /**
@@ -58,17 +58,6 @@ public class Server {
         boolean ans =  this.isIdle && c.getPresentTime() >= this.nextAvailableTime;
         System.out.println("\t\tisIdle?" + ans);
         return ans;
-//
-//
-////        return this.waitingQueue.isEmpty();
-//        boolean ans = this.isIdle
-//                          && this.waitingQueue.isEmpty()
-//                          && potentialCustomer.getPresentTime() >= this.nextAvailableTime;
-//        System.out.println(this);
-//        System.out.println("canServeImmediately( " + potentialCustomer + ") ? " + ans);
-//        return ans;
-
-//        return this.isIdle && potentialCustomer.getTiming() >= this.nextAvailableTime;
     }
 
     /**

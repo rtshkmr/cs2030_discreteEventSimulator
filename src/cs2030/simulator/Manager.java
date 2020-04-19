@@ -58,17 +58,9 @@ public class Manager {
 
             if (!isTerminalState(currentCustomer)) {
                 Customer changed = changeCustomerState(currentCustomer);
-                // todo: aim: shift the event registry somewhere else.
-//                if(changed.getCustomerStatus() != currentCustomer.getCustomerStatus()) {
-//                    System.out.println("## event registered..");
-//                    registerEvent(currentCustomer,mainQueue);
-//                }
                 System.out.println("++++++++++  MANAGER ADDS TO  MAIN QUEUE, CUSTOMER: " + changed);
                 this.mainQueue.add(changed);
-
-//                changed.ifPresentOrElse(this.mainQueue::add, () -> this.mainQueue.add(currentCustomer));
-                // todo control when to register event
-            } /*else registerEvent(currentCustomer, mainQueue);*/ // terminal event
+            }
 
             //            if (isTerminalState(currentCustomer)) {
 //                handleTerminalState(currentCustomer);

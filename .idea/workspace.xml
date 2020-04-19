@@ -4,6 +4,7 @@
     <list default="true" id="5d6383db-6683-4606-9f61-424c2254a7b7" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/src/cs2030/simulator/Customer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/cs2030/simulator/Customer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/cs2030/simulator/Manager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/cs2030/simulator/Manager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/cs2030/simulator/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/cs2030/simulator/Server.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -83,7 +84,14 @@
       <option name="project" value="LOCAL" />
       <updated>1587288630466</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="okay printing is okay, now to settle the stats">
+      <created>1587289633463</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1587289633463</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -92,7 +100,8 @@
     <MESSAGE value="so close, learning point: delete old class files because they may not be overwritten and hence may give issues." />
     <MESSAGE value="level 1, now the issue is that 10 needs to wait some more because the server he is assigned to is still busy. I think we need another method in server. So if the manager picks a waiting customer, and passes the waiting customer and his assigned server to a method called process waits. &#10;&#10;now the process waits method will check the assigned server's queue. if more than 1 people are in queue, will check if the head of the queue is equal to this customer. if so, then do the normal assign to served&#10;&#10;else if more than 1 person is in queue and head isn't this waiting customer, there won't be a change of status for the customer (remains as waits) but the this timing will change to the server's next available time.&#10;&#10;if only 1 person is in queue, carry on as normal.&#10;&#10;&#10;event registry: only register events if there's a change of status b/w when the manager picked the customer from the queue and when the customer has been modified... todo." />
     <MESSAGE value="almost there, we need to control the event registry now. Currently we register events only if there's a state change, but that means the first time someone starts waiting won't be registered. hmmm...&#10;&#10;also, note that the stats aren't accurate." />
-    <option name="LAST_COMMIT_MESSAGE" value="almost there, we need to control the event registry now. Currently we register events only if there's a state change, but that means the first time someone starts waiting won't be registered. hmmm...&#10;&#10;also, note that the stats aren't accurate." />
+    <MESSAGE value="okay printing is okay, now to settle the stats" />
+    <option name="LAST_COMMIT_MESSAGE" value="okay printing is okay, now to settle the stats" />
   </component>
   <component name="WindowStateProjectService">
     <state x="546" y="1577" width="943" height="677" key="#Project_Structure" timestamp="1587169443651">
@@ -111,10 +120,10 @@
       <screen x="0" y="25" width="1920" height="1055" />
     </state>
     <state x="693" y="302" width="524" height="501" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.25.1920.1055@0.25.1920.1055" timestamp="1587265430277" />
-    <state x="757" y="118" width="1032" height="811" key="CommitChangelistDialog2" timestamp="1587288630411">
+    <state x="757" y="118" width="1032" height="811" key="CommitChangelistDialog2" timestamp="1587289633406">
       <screen x="0" y="25" width="1920" height="1055" />
     </state>
-    <state x="757" y="118" width="1032" height="811" key="CommitChangelistDialog2/0.25.1920.1055@0.25.1920.1055" timestamp="1587288630411" />
+    <state x="757" y="118" width="1032" height="811" key="CommitChangelistDialog2/0.25.1920.1055@0.25.1920.1055" timestamp="1587289633406" />
     <state x="359" y="294" width="1191" height="518" key="caller.chooser.dialog" timestamp="1587261195414">
       <screen x="0" y="25" width="1920" height="1055" />
     </state>
