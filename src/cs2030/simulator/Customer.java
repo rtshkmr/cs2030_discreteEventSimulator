@@ -120,6 +120,12 @@ public class Customer implements Comparable<Customer> {
         return new Customer(this.myID, this.presentTime, nextAvailableTime,
             "waits", serverID);
     }
+    public Customer fromWaitsToWaits(Server assignedServer) {
+        assert (this.customerStatus.equals("waits"));
+        Customer.TotalWaitingTime += (assignedServer.nextAvailableTime - this.presentTime);
+        return new Customer(this.myID, assignedServer.nextAvailableTime,
+            assignedServer.nextAvailableTime,"waits", this.serverID);
+    }
 
     /**
      * Customer is done waiting and is ready to be served.
@@ -132,24 +138,24 @@ public class Customer implements Comparable<Customer> {
     protected Customer fromWaitsToServed(Server s) {
         assert (this.customerStatus.equals("waits"));
 
-        // if the server has more than 1 person waiting,
-        if(s.waitingQueue.size() > 1) {
-
-        }
-        double newPresentTime;
-        Customer head = s.waitingQueue.peek();
-        if(this.equals(head)) {
-            newPresentTime = this.nextTime; // will be served next;
-        } else {
-            newPresentTime = s.nextAvailableTime;
-        }
+//        // if the server has more than 1 person waiting,
+//        if(s.waitingQueue.size() > 1) {
+//
+//        }
+//        double newPresentTime;
+//        Customer head = s.waitingQueue.peek();
+//        if(this.equals(head)) {
+//            newPresentTime = this.nextTime; // will be served next;
+//        } else {
+//            newPresentTime = s.nextAvailableTime;
+//        }
 
 
 
         // will def be served if there's no one else waiting:
         return new Customer(this.myID,
-            newPresentTime,
-            newPresentTime,
+            s.nextAvailableTime,
+            s.nextAvailableTime,
             "served",
             this.serverID);
     }
@@ -274,5 +280,7 @@ public class Customer implements Comparable<Customer> {
     public static String prettyPrint(double x) {
         return String.format("%.3f", x);
     }
+
+
     //=============================================================
 }

@@ -54,15 +54,22 @@ public class Manager {
         while (!this.mainQueue.isEmpty()) {
             Customer currentCustomer = mainQueue.poll();
             System.out.println(">>>>>>>>> MANAGER PICKS FROM MAIN QUEUE, CUSTOMER: " + currentCustomer);
-            System.out.println("_____________________________________________________ ");
+//            System.out.println("_____________________________________________________ ");
 
-            registerEvent(currentCustomer, mainQueue);
             if (!isTerminalState(currentCustomer)) {
-                Optional<Customer> changed = changeCustomerState(currentCustomer);
+                Customer changed = changeCustomerState(currentCustomer);
+//                Optional<Customer> changed = changeCustomerState(currentCustomer);
+                if(changed.getCustomerStatus() != currentCustomer.getCustomerStatus()) {
+                    System.out.println("## event registered..");
+                    registerEvent(currentCustomer,mainQueue);
+                }
                 System.out.println("++++++++++  MANAGER ADDS TO  MAIN QUEUE, CUSTOMER: " + changed);
-//                this.mainQueue.add(changed);
-                changed.ifPresentOrElse(this.mainQueue::add, () -> this.mainQueue.add(currentCustomer));
-            }
+                this.mainQueue.add(changed);
+
+//                changed.ifPresentOrElse(this.mainQueue::add, () -> this.mainQueue.add(currentCustomer));
+                // todo control when to register event
+            } else registerEvent(currentCustomer, mainQueue); // terminal event
+
             //            if (isTerminalState(currentCustomer)) {
 //                handleTerminalState(currentCustomer);
 //            } else { // manager helps them decide and adds them back to queue:
@@ -84,7 +91,7 @@ public class Manager {
      * @return A modified form of the Customer after the Manager has provided sufficient
      * assistance to help the customer make a decision and change its state.
      */
-    private Optional<Customer> changeCustomerState(Customer c) {
+    private Customer changeCustomerState(Customer c) {
         if (isArrivesState(c)) {
             return handleArrivalState(c);
         } else {
@@ -104,16 +111,23 @@ public class Manager {
                 this.myServers[s.serverID - 1] = s.actuallyServeCustomer(decided);
             }
             if (isWaitsState(c)) {
-                Server s = this.myServers[c.serverID - 1];
-                System.out.println("XXX keep waiting? " +
-                                       "assigned server has queuesize: " + s.waitingQueue.size());
-                System.out.println("    assigned server's head has customer " + s.waitingQueue.peek());
-                decided = c.fromWaitsToServed(s);
+                Server assignedServer = this.myServers[c.serverID - 1];
 
-                    // need to somehow tell them that they need to keep waiting.
-//                }
+                System.out.println("XXX keep waiting? " +
+                                       "assigned server has queuesize: " + assignedServer.waitingQueue.size());
+                System.out.println("    assigned server's head has customer " + assignedServer.waitingQueue.peek());
+                System.out.println("    assigned server's next avail " + assignedServer.nextAvailableTime);
+
+
+                if(!c.equals(assignedServer.waitingQueue.peek())) {
+                    System.out.println("XXX yes keep waiting");
+                    decided = c.fromWaitsToWaits(assignedServer);
+                } else {
+                    System.out.println("XXX no change to served");
+                    decided = c.fromWaitsToServed(assignedServer);
+                }
             }
-            return Optional.ofNullable(decided);
+            return decided;
         }
     }
 
@@ -123,7 +137,7 @@ public class Manager {
      * @param c customer that has just arrived.
      * @return Customer that either gets served immediately, waits or leaves.
      */
-    private Optional<Customer> handleArrivalState(Customer c) {
+    private Customer handleArrivalState(Customer c) {
         Server[] queriedServers = queryServers(c);
 
         System.out.println("\t---- outcome of querying the servers: ");
@@ -150,7 +164,7 @@ public class Manager {
             System.out.println("\t\t!!! customer leaves: ");
             changedCustomer = c.fromArrivesToLeaves();
         }
-        return Optional.of(changedCustomer);
+        return changedCustomer;
     }
 
 
