@@ -53,22 +53,22 @@ public class Manager {
     public void operate() {
         while (!this.mainQueue.isEmpty()) {
             Customer currentCustomer = mainQueue.poll();
+            if(currentCustomer.firstWaits)  registerEvent(currentCustomer, mainQueue);
             System.out.println(">>>>>>>>> MANAGER PICKS FROM MAIN QUEUE, CUSTOMER: " + currentCustomer);
-//            System.out.println("_____________________________________________________ ");
 
             if (!isTerminalState(currentCustomer)) {
                 Customer changed = changeCustomerState(currentCustomer);
-//                Optional<Customer> changed = changeCustomerState(currentCustomer);
-                if(changed.getCustomerStatus() != currentCustomer.getCustomerStatus()) {
-                    System.out.println("## event registered..");
-                    registerEvent(currentCustomer,mainQueue);
-                }
+                // todo: aim: shift the event registry somewhere else.
+//                if(changed.getCustomerStatus() != currentCustomer.getCustomerStatus()) {
+//                    System.out.println("## event registered..");
+//                    registerEvent(currentCustomer,mainQueue);
+//                }
                 System.out.println("++++++++++  MANAGER ADDS TO  MAIN QUEUE, CUSTOMER: " + changed);
                 this.mainQueue.add(changed);
 
 //                changed.ifPresentOrElse(this.mainQueue::add, () -> this.mainQueue.add(currentCustomer));
                 // todo control when to register event
-            } else registerEvent(currentCustomer, mainQueue); // terminal event
+            } /*else registerEvent(currentCustomer, mainQueue);*/ // terminal event
 
             //            if (isTerminalState(currentCustomer)) {
 //                handleTerminalState(currentCustomer);
@@ -97,8 +97,6 @@ public class Manager {
         } else {
             Customer decided = null;
             if (isServedState(c)) {
-
-
                 double completionTime = this.getCompletionTime(c.getPresentTime());
                 decided = c.fromServedToDone(completionTime);
                 // todo: the server is actually working on this customer now,
@@ -139,7 +137,6 @@ public class Manager {
      */
     private Customer handleArrivalState(Customer c) {
         Server[] queriedServers = queryServers(c);
-
         System.out.println("\t---- outcome of querying the servers: ");
         for(Server s : queriedServers) {
             System.out.println("\t" + s);

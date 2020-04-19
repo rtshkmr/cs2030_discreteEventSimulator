@@ -21,6 +21,7 @@ public class Customer implements Comparable<Customer> {
     private final double nextTime;
     private final String customerStatus; // lowercase string
     protected int serverID; // NO_SERVER if unassigned
+    protected boolean firstWaits = true;
 
     /**
      * Constructs a Customer when the Customer enters.
@@ -123,10 +124,13 @@ public class Customer implements Comparable<Customer> {
     public Customer fromWaitsToWaits(Server assignedServer) {
         assert (this.customerStatus.equals("waits"));
         Customer.TotalWaitingTime += (assignedServer.nextAvailableTime - this.presentTime);
-        return new Customer(this.myID, assignedServer.nextAvailableTime,
+        Customer res =  new Customer(this.myID, assignedServer.nextAvailableTime,
             assignedServer.nextAvailableTime,"waits", this.serverID);
+        if(firstWaits) {
+            res.firstWaits = false;
+        }
+        return res;
     }
-
     /**
      * Customer is done waiting and is ready to be served.
      * State change: WAITS to SERVED.
