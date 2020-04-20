@@ -10,10 +10,10 @@ import java.util.Queue;
  */
 public class Event implements Comparable<Event> {
     private boolean isArrivalLog = false;
-    private double eventTime;
+    private final double eventTime;
     private Customer currentCustomer;
-    private Queue<String> eventLog; // might have to make this a priorityQueue
-    private PriorityQueue<Customer> remainingQueue;
+    private final Queue<String> eventLog; // might have to make this a priorityQueue
+    private final PriorityQueue<Customer> remainingQueue;
     protected int serverID;
 
     /**

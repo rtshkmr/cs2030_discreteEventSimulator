@@ -79,9 +79,11 @@ public class Customer implements Comparable<Customer> {
      * @return String representation of the class level statistics being tallied
      */
     protected static String customerStats() {
-        double averageWaitingTime = Customer.TotalWaitingTime / Customer.CustomersServed;
+        double averageWaitingTime =
+                (CustomersServed == 0 || TotalWaitingTime == 0)
+                        ? 0 : Customer.TotalWaitingTime / Customer.CustomersServed;
         return "[" + prettyPrint(averageWaitingTime) + " "
-                   + CustomersServed + " " + (CustomersEnteredCounter - CustomersServed) + "]";
+                + CustomersServed + " " + (CustomersEnteredCounter - CustomersServed) + "]";
     }
 
 
@@ -102,7 +104,7 @@ public class Customer implements Comparable<Customer> {
     protected Customer fromArrivesToServed(int serverID) {
         // ARRIVES to SERVED (i.e served immediately)
         return new Customer(this.myID, this.presentTime, this.presentTime,
-            "served", serverID, this.entryTime);
+                "served", serverID, this.entryTime);
     }
 
     /**
@@ -119,21 +121,26 @@ public class Customer implements Comparable<Customer> {
      * @return Customer Customer that waits.
      */
     protected Customer fromArrivesToWaits(double nextAvailableTime, int serverID) {
-//        Customer.TotalWaitingTime += (nextAvailableTime - this.presentTime);
         Customer.TotalWaitCounter++;
         return new Customer(this.myID, this.presentTime, nextAvailableTime,
-            "waits", serverID, this.entryTime);
+                "waits", serverID, this.entryTime);
     }
-    public Customer fromWaitsToWaits(Server assignedServer) {
+
+    /**
+     *  Customer needs to wait if there's someone else still in the queue
+     * @param nextAvailableTime need to try waiting until next time
+     * @return Customer with modified present and next times
+     */
+    public Customer fromWaitsToWaits(double nextAvailableTime) {
         assert (this.customerStatus.equals("waits"));
-//        Customer.TotalWaitingTime += (assignedServer.nextAvailableTime - this.nextTime);
-        Customer res =  new Customer(this.myID, assignedServer.nextAvailableTime,
-            assignedServer.nextAvailableTime,"waits", this.serverID, this.entryTime);
-        if(firstWaits) {
-            res.firstWaits = false;
-        }
+        Customer res = new Customer(this.myID, nextAvailableTime,
+                nextAvailableTime, "waits", this.serverID, this.entryTime);
+//        if (firstWaits) {
+        res.firstWaits = false;
+//        }
         return res;
     }
+
     /**
      * Customer is done waiting and is ready to be served.
      * State change: WAITS to SERVED.
@@ -142,30 +149,15 @@ public class Customer implements Comparable<Customer> {
      *
      * @return Customer Customer that is done waiting and will be served next.
      */
-    protected Customer fromWaitsToServed(Server s) {
+    protected Customer fromWaitsToServed(double nextAvailableTime) {
         assert (this.customerStatus.equals("waits"));
-        //todo: manipulate waiting time here.
-        Customer.TotalWaitingTime += (s.nextAvailableTime - this.entryTime);
-//        // if the server has more than 1 person waiting,
-//        if(s.waitingQueue.size() > 1) {
-//
-//        }
-//        double newPresentTime;
-//        Customer head = s.waitingQueue.peek();
-//        if(this.equals(head)) {
-//            newPresentTime = this.nextTime; // will be served next;
-//        } else {
-//            newPresentTime = s.nextAvailableTime;
-//        }
-
-
-
+        Customer.TotalWaitingTime += (nextAvailableTime - this.entryTime);
         // will def be served if there's no one else waiting:
         return new Customer(this.myID,
-            s.nextAvailableTime,
-            s.nextAvailableTime,
-            "served",
-            this.serverID, this.entryTime);
+                nextAvailableTime,
+                nextAvailableTime,
+                "served",
+                this.serverID, this.entryTime);
     }
 
     /*                        to terminal  state                               */
@@ -197,7 +189,7 @@ public class Customer implements Comparable<Customer> {
     protected Customer fromArrivesToLeaves() {
         Customer.CustomersLeft++;
         return new Customer(this.myID, this.presentTime, this.presentTime,
-            "leaves", NO_SERVER, this.entryTime);
+                "leaves", NO_SERVER, this.entryTime);
     }
 
     //==========================================================================
@@ -288,7 +280,5 @@ public class Customer implements Comparable<Customer> {
     public static String prettyPrint(double x) {
         return String.format("%.3f", x);
     }
-
-
     //=============================================================
 }

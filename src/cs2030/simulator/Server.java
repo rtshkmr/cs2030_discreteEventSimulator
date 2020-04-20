@@ -1,4 +1,5 @@
 package cs2030.simulator;
+
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -15,6 +16,7 @@ public class Server {
     protected final double nextAvailableTime;
     protected final int qmax;
     protected final Queue<Customer> waitingQueue; // to restrict size to qmax
+    protected final boolean isResting;
     // todo: might have to store queues inside manager to avoid cyclic dependency?
 
     /**
@@ -28,6 +30,7 @@ public class Server {
         this.isIdle = true;
         this.nextAvailableTime = 0; // start availability will be at 0
         this.waitingQueue = new LinkedList<>();
+        this.isResting = false;
     }
 
     /**
@@ -35,13 +38,15 @@ public class Server {
      *
      * @param serverID          the unique ID for the server
      * @param isIdle            whether the server is idle
+     * @param isResting         whether the server is resting
      * @param nextAvailableTime when the server is free next.
      */
-    protected Server(int serverID, int qmax, boolean isIdle, double nextAvailableTime,
+    protected Server(int serverID, int qmax, boolean isIdle, boolean isResting, double nextAvailableTime,
                      Queue<Customer> waitingQueue) {
         this.serverID = serverID;
         this.qmax = qmax;
         this.isIdle = isIdle;
+        this.isResting = isResting;
         this.nextAvailableTime = nextAvailableTime;
         this.waitingQueue = waitingQueue;
     }
@@ -50,33 +55,33 @@ public class Server {
     /**
      * Server reports if he/she is idle, hence can serve a customer immediately.
      *
+     * @param arrivalTime the time the customer arrives
      * @return true if Server can serve the potentialCustomer immediately
-     * @param c time compared to is a customer's time
      */
     // todo: this feels wrong, can't wrap my head around it.
-    protected boolean isIdle(Customer c) {
-        boolean ans =  this.isIdle && c.getPresentTime() >= this.nextAvailableTime;
-        System.out.println("\t\tisIdle?" + ans);
+    protected boolean isIdle(double arrivalTime) {
+        boolean ans = !this.isResting && this.isIdle && arrivalTime >= this.nextAvailableTime;
+        //System.out.println("\t\tisIdle?" + ans);
         return ans;
     }
 
     /**
      * Server reports it's possible to queue if queue isn't full.
      *
+     * @param arrivalTime the time the customer arrives
      * @return true if Server can serve the potentialCustomer next if customer waits.
-     * @param c timing provided by the customer's presense.
      */
-    protected boolean canQueue(Customer c) {
-        boolean ans = c.getPresentTime() < this.nextAvailableTime
-                        && this.waitingQueue.size() < this.qmax;
-        System.out.println("\t\tcanQueue?" + ans);
-          return ans;
+    protected boolean canQueue(double arrivalTime) {
+        boolean ans = arrivalTime < this.nextAvailableTime
+                && this.waitingQueue.size() < this.qmax;
+        //System.out.println("\t\tcanQueue?" + ans);
+        return ans;
 //        return !this.isIdle(c) && this.waitingQueue.size() < qmax;
 ////        return !this.isIdle && !this.hasCustomerWaiting;
 //        boolean ans =  /*!this.isIdle*/!isIdle(potentialCustomer) && this.waitingQueue.size() < this.qmax;
 //        // todo: a customer can wait for a server if the server's queue is not full
-//        System.out.println(this);
-//        System.out.println("canServeNext( " + potentialCustomer + ") ? " + ans);
+//        //System.out.println(this);
+//        //System.out.println("canServeNext( " + potentialCustomer + ") ? " + ans);
 //        return ans;
     }
 
@@ -88,30 +93,26 @@ public class Server {
      */
     public Server serveUponArrival() {
         assert this.waitingQueue.isEmpty();
-        return new Server(this.serverID, this.qmax,false,
-            this.nextAvailableTime,
-            this.waitingQueue);
+        return new Server(this.serverID, this.qmax, false, false,
+                this.nextAvailableTime,
+                this.waitingQueue);
     }
 
     /**
      * Server adds the customer to his queue, queue is updated!
      * Only the queue attribute will be modified by this.
      *
-     * @param waitingCustomer a customer that's waiting.
+     * @param newQueue new queue to replace the old one.
      * @return a new instance of Server with an updated queue.
      */
     // todo: note that nextAvailableTime shall only be updated once a customer is being served
     //       ie. in the finallyServe method.
     //       case1: when customer served immediately
     //       case2: when can finally serveCustomer that's waiting (?)
-    public Server addToWaitQueue(Customer waitingCustomer) {
+    public Server addToWaitQueue(Queue<Customer> newQueue) {
         assert !this.isIdle;
-        assert this.nextAvailableTime == waitingCustomer.getNextTime();
-        Queue<Customer> newQueue = new LinkedList<>(this.waitingQueue);
-        newQueue.add(waitingCustomer);
-        System.out.println("addToWaitQueue(), newQueueSize:" +newQueue.size());
-        return new Server(this.serverID, this.qmax, this.isIdle,
-            this.nextAvailableTime, newQueue);
+        return new Server(this.serverID, this.qmax, this.isIdle, false,
+                this.nextAvailableTime, newQueue);
     }
 
 
@@ -123,45 +124,65 @@ public class Server {
      * 1. if doneCustomer was initially waiting in queue, then free up queue space
      * 2. else no change to the queue
      *
-     * @param doneCustomer a customer that's waiting.
+     * @param presentTime time when the customer will be done.
      * @return a new instance of Server with an updated state.
      */
-    public Server actuallyServeCustomer(Customer doneCustomer) {
+    public Server actuallyServeCustomer(double presentTime) {
         assert !this.isIdle;
         if (this.waitingQueue.isEmpty()) { // means the doneCustomer wasn't waiting
-            return new Server(this.serverID, this.qmax,true,
-                doneCustomer.getPresentTime(), this.waitingQueue);
+            return new Server(this.serverID, this.qmax, true, false,
+                    presentTime, this.waitingQueue);
         } else { // doneCustomer was waiting, we modify the queue as well
             // todo: we compare idx first, if possible change to using the equals method.
-            assert this.waitingQueue.peek().getID() == doneCustomer.getID();
             Queue<Customer> newQueue = new LinkedList<>(this.waitingQueue);
             newQueue.remove();
-            System.out.println("actuallyServeCustomer(), newQueueSize:" +newQueue.size());
-            return new Server(this.serverID,this.qmax, newQueue.isEmpty(),
-                doneCustomer.getPresentTime(), newQueue);
+            return new Server(this.serverID, this.qmax, newQueue.isEmpty(), false,
+                    presentTime, newQueue);
         }
     }
 
-    /**
-     * Server is done serving customer.
-     * Only idleness might change.
-     *
-     * @return a new instance of Server with an updated state.
-     */
-    public Server doneServingCustomer() {
-        return new Server(this.serverID,this.qmax,
-            !this.waitingQueue.isEmpty(), // server won't be idle if there are ppl in the queue
-            this.nextAvailableTime,
-            this.waitingQueue);
+    // todo: take a rest server (double endOfRestTime)
+    //        i'm going to attempt to just modify the nextAvailable time instead..
+    protected Server serveThenRest(double endOfRest) {
+        assert !this.isIdle;
+        if (this.waitingQueue.isEmpty()) { // means the doneCustomer wasn't waiting
+            return new Server(this.serverID, this.qmax, true, true,
+                    endOfRest, this.waitingQueue);
+        } else { // doneCustomer was waiting, we modify the queue as well
+            // todo: we compare idx first, if possible change to using the equals method.
+            Queue<Customer> newQueue = new LinkedList<>(this.waitingQueue);
+            newQueue.remove();
+            return new Server(this.serverID, this.qmax, newQueue.isEmpty(), true,
+                    endOfRest, newQueue);
+        }
     }
+
+    protected Server startResting(double restUntil) {
+        return new Server(this.serverID,
+                this.qmax,
+                this.isIdle, true,
+                restUntil,
+                this.waitingQueue);
+    }
+
+    protected Server stopResting(double now) {
+        if (now >= this.nextAvailableTime) {
+            return new Server(this.serverID, this.qmax, this.isIdle, false,
+                    this.nextAvailableTime, this.waitingQueue);
+        } else return this;
+    }
+
+
+    // todo: back to work server ()
 
 
     @Override
     public String toString() {
         return "Server [serverID " + this.serverID
-                   + "| qmax: " + this.qmax
-                   + "| isIdle? " + this.isIdle
-                   + "| waitingQueueSize " + this.waitingQueue.size()
-                   + "| nextAvailableTime " + this.nextAvailableTime + "]";
+                + "| qmax: " + this.qmax
+                + "| isIdle? " + this.isIdle
+                + "| isResting?" + this.isResting
+                + "| waitingQueueSize " + this.waitingQueue.size()
+                + "| nextAvailableTime " + this.nextAvailableTime + "]";
     }
 }

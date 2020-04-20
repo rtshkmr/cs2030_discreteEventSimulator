@@ -22,13 +22,17 @@ public class Main {
         int numArrivalEvents = sc.nextInt(); // aka number of customers expected to enter
         double lambda = sc.nextDouble();
         double mu = sc.nextDouble();
-        assert (lambda > 0 && mu > 0);
+        double rho = sc.nextDouble();
+        double pResting = sc.nextDouble();
+        assert (lambda > 0 && mu > 0 && rho > 0);
         Manager myManager = new Manager(seed,
-                                        numServers,
-                                        qmax,
-                                        numArrivalEvents,
-                                        lambda,
-                                        mu);
+                numServers,
+                qmax,
+                numArrivalEvents,
+                lambda,
+                mu,
+                rho,
+                pResting);
         sc.close();
         myManager.operate();
         System.out.println(myManager.showLogs());
