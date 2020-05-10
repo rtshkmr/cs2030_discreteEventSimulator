@@ -7,7 +7,7 @@ import java.util.Queue;
  * A server is an employee of the Manager. Server shall tell the Manager if he/she's
  * idle, and if so, if he/she has a filled up waitingQueue. Also, a server
  * will change its state when various actions happen with respect to the actions
- * they do on the customers.
+ * they do on the customers. A normal server is a human server.
  */
 public class Server {
 
@@ -15,9 +15,8 @@ public class Server {
     protected final boolean isIdle;
     protected final double nextAvailableTime;
     protected final int qmax;
-    protected final Queue<Customer> waitingQueue; // to restrict size to qmax
+    protected final Queue<Customer> waitingQueue;
     protected final boolean isResting;
-    // todo: might have to store queues inside manager to avoid cyclic dependency?
 
     /**
      * Usual constructor for a server, with empty queue.
@@ -59,9 +58,7 @@ public class Server {
      * @return true if Server can serve the potentialCustomer immediately
      */
     protected boolean isIdle(double arrivalTime) {
-        boolean ans = !this.isResting && this.isIdle && arrivalTime >= this.nextAvailableTime;
-        ////System.out.println("\t\tisIdle?" + ans);
-        return ans;
+        return !this.isResting && this.isIdle && arrivalTime >= this.nextAvailableTime;
     }
 
     /**
@@ -71,17 +68,8 @@ public class Server {
      * @return true if Server can serve the potentialCustomer next if customer waits.
      */
     protected boolean canQueue(double arrivalTime) {
-        boolean ans = arrivalTime < this.nextAvailableTime
-                          && this.waitingQueue.size() < this.qmax;
-        ////System.out.println("\t\tcanQueue?" + ans);
-        return ans;
-//        return !this.isIdle(c) && this.waitingQueue.size() < qmax;
-////        return !this.isIdle && !this.hasCustomerWaiting;
-//        boolean ans =  /*!this.isIdle*/!isIdle(potentialCustomer) && this.waitingQueue.size() < this.qmax;
-//        // todo: a customer can wait for a server if the server's queue is not full
-//        ////System.out.println(this);
-//        ////System.out.println("canServeNext( " + potentialCustomer + ") ? " + ans);
-//        return ans;
+        return arrivalTime < this.nextAvailableTime
+                   && this.waitingQueue.size() < this.qmax;
     }
 
     /**
@@ -90,7 +78,7 @@ public class Server {
      *
      * @return a new instance of Server with an updated idle state.
      */
-    public Server serveUponArrival() {
+    protected Server serveUponArrival() {
         assert this.waitingQueue.isEmpty();
         return new Server(this.serverID, this.qmax, false, false,
             this.nextAvailableTime,
@@ -104,16 +92,11 @@ public class Server {
      * @param newQueue new queue to replace the old one.
      * @return a new instance of Server with an updated queue.
      */
-    // todo: note that nextAvailableTime shall only be updated once a customer is being served
-    //       ie. in the finallyServe method.
-    //       case1: when customer served immediately
-    //       case2: when can finally serveCustomer that's waiting (?)
-    public Server addToWaitQueue(Queue<Customer> newQueue) {
+    protected Server addToWaitQueue(Queue<Customer> newQueue) {
         assert !this.isIdle;
         return new Server(this.serverID, this.qmax, this.isIdle, false,
             this.nextAvailableTime, newQueue);
     }
-
 
     /**
      * Actually serves a customer.
@@ -126,21 +109,25 @@ public class Server {
      * @param presentTime time when the customer will be done.
      * @return a new instance of Server with an updated state.
      */
-    public Server actuallyServeCustomer(double presentTime) {
+    protected Server actuallyServeCustomer(double presentTime) {
         assert !this.isIdle;
         if (this.waitingQueue.isEmpty()) { // means the doneCustomer wasn't waiting
             return new Server(this.serverID, this.qmax, false, false,
                 presentTime, this.waitingQueue);
         } else { // doneCustomer was waiting, we modify the queue as well
-            // todo: we compare idx first, if possible change to using the equals method.
             Queue<Customer> newQueue = new LinkedList<>(this.waitingQueue);
             newQueue.remove();
-            return new Server(this.serverID, this.qmax, /*newQueue.isEmpty()*/ false, false,
-                presentTime, newQueue);
+            return new Server(this.serverID, this.qmax,
+                false, false, presentTime, newQueue);
         }
     }
 
-    public Server doneServing() {
+    /**
+     * Serve has done serving a customer is idle now.
+     *
+     * @return idle Server.
+     */
+    protected Server doneServing() {
         return new Server(this.serverID,
             this.qmax,
             true,
@@ -149,43 +136,31 @@ public class Server {
             this.waitingQueue);
     }
 
-
-    // todo: take a rest server (double endOfRestTime)
-    //        i'm going to attempt to just modify the nextAvailable time instead..
-    protected Server serveThenRest(double endOfRest) {
-        assert !this.isIdle;
-        if (this.waitingQueue.isEmpty()) { // means the doneCustomer wasn't waiting
-            return new Server(this.serverID, this.qmax, true, true,
-                endOfRest, this.waitingQueue);
-        } else { // doneCustomer was waiting, we modify the queue as well
-            // todo: we compare idx first, if possible change to using the equals method.
-            Queue<Customer> newQueue = new LinkedList<>(this.waitingQueue);
-            newQueue.remove();
-            return new Server(this.serverID, this.qmax, newQueue.isEmpty(), true,
-                endOfRest, newQueue);
-        }
-    }
-
+    /**
+     * Human server starts resting until a given timing.
+     *
+     * @param restUntil the timing to stop resting.
+     * @return the resting human server.
+     */
     protected Server startResting(double restUntil) {
-        Server s =  new Server(this.serverID,
+        return new Server(this.serverID,
             this.qmax,
             true, true,
             restUntil,
             this.waitingQueue);
-        //System.out.println("{start resting! }" + s);
-        return s;
     }
 
+    /**
+     * Human server stops resting if now is beyond the allocated rest time.
+     * @param now the time now.
+     * @return Server that might potentially stop resting.
+     */
     protected Server stopResting(double now) {
         if (now >= this.nextAvailableTime) {
-            //System.out.println("{stop resting! }" + this);
             return new Server(this.serverID, this.qmax, this.isIdle, false,
                 this.nextAvailableTime, this.waitingQueue);
         } else return this;
     }
-
-
-    // todo: back to work server ()
 
 
     protected int getQueueSize() {
@@ -193,15 +168,6 @@ public class Server {
     }
 
     @Override
-//    public String toString() {
-//        return "Server [serverID " + this.serverID
-//                   + "| qmax: " + this.qmax
-//                   + "| isIdle? " + this.isIdle
-//                   + "| isResting?" + this.isResting
-//                   + "| waitingQueueSize " + this.waitingQueue.size()
-//                   + "| nextAvailableTime " + this.nextAvailableTime + "]";
-//    }
-//
     public String toString() {
         return "server " + this.serverID;
     }

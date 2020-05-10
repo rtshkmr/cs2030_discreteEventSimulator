@@ -11,12 +11,12 @@ public class SelfServer extends Server {
     /**
      * Usual constructor for a server.
      *
-     * @param serverID
-     * @param qmax
+     * @param serverID int representation for the self-server.
+     * @param qmax     the max number of customers that may queue in the shared queue.
      */
     public SelfServer(int serverID, int qmax) {
         super(serverID, qmax);
-        if(!doneInit) {
+        if (!doneInit) {
             SelfServer.sharedQueue = new LinkedList<>();
             SelfServer.doneInit = true;
         }
@@ -30,11 +30,19 @@ public class SelfServer extends Server {
      * @param isResting         whether the server is resting
      * @param nextAvailableTime when the server is free next.
      */
-    private SelfServer(int serverID, int qmax, boolean isIdle, boolean isResting, double nextAvailableTime,
+    private SelfServer(int serverID, int qmax, boolean isIdle,
+                       boolean isResting, double nextAvailableTime,
                        Queue<Customer> waitingQueue) {
         super(serverID, qmax, isIdle, isResting, nextAvailableTime, waitingQueue);
     }
 
+    /**
+     * A factory method to help update a SelfServer's state easily.
+     *
+     * @param isIdle            whether the selfServer is idle or not.
+     * @param nextAvailableTime when the selfServer is free next.
+     * @return updated self server.
+     */
     protected SelfServer updateSelfServer(boolean isIdle, double nextAvailableTime) {
         return new SelfServer(this.serverID,
             this.qmax, isIdle, false, nextAvailableTime, this.waitingQueue);
@@ -48,8 +56,7 @@ public class SelfServer extends Server {
      */
     @Override
     protected boolean isIdle(double arrivalTime) {
-        boolean ans = this.isIdle && arrivalTime >= this.nextAvailableTime;
-        return ans;
+        return this.isIdle && arrivalTime >= this.nextAvailableTime;
     }
 
     /**
@@ -58,12 +65,9 @@ public class SelfServer extends Server {
      * @param arrivalTime the time the customer arrives
      * @return true if Server can serve the potentialCustomer next if customer waits.
      */
-    // todo: is it enough to just check the current status of the shared queue or should we consider the timing when
-    //  the person arrives?
     @Override
     protected boolean canQueue(double arrivalTime) {
-        boolean ans = SelfServer.sharedQueue.size() < this.qmax;
-        return ans;
+        return SelfServer.sharedQueue.size() < this.qmax;
     }
 
     /**
@@ -74,7 +78,7 @@ public class SelfServer extends Server {
      * @return a new instance of Server with an updated idle state.
      */
     @Override
-    public SelfServer serveUponArrival() {
+    protected SelfServer serveUponArrival() {
         assert SelfServer.sharedQueue.isEmpty();
         return updateSelfServer(false, this.nextAvailableTime);
     }
@@ -86,9 +90,8 @@ public class SelfServer extends Server {
      * @param newQueue new queue to replace the old sharedQueue.
      * @return a new instance of Server with an updated queue.
      */
-    // todo: shouldn't this take in a customer?
     @Override
-    public SelfServer addToWaitQueue(Queue<Customer> newQueue) {
+    protected SelfServer addToWaitQueue(Queue<Customer> newQueue) {
         SelfServer.sharedQueue = newQueue; // update sharedQueue to the newQueue
         return this;
     }
@@ -105,7 +108,7 @@ public class SelfServer extends Server {
      * @return a new instance of Server with an updated state.
      */
     @Override
-    public SelfServer actuallyServeCustomer(double presentTime) {
+    protected SelfServer actuallyServeCustomer(double presentTime) {
         assert !this.isIdle;
         // if customer was waiting in the sharedqueue:
         if (!SelfServer.sharedQueue.isEmpty()) {
@@ -115,11 +118,11 @@ public class SelfServer extends Server {
     }
 
     @Override
-    public SelfServer doneServing() {
+    protected SelfServer doneServing() {
         return updateSelfServer(true, this.nextAvailableTime);
     }
 
-    // resting features not available!
+    // resting features not available since it's a self-checkout server!
 
     @Override
     protected int getQueueSize() {
@@ -127,18 +130,7 @@ public class SelfServer extends Server {
     }
 
     @Override
-//    public String toString() {
-//        return "SelfServer [serverID " + this.serverID
-//                   + "| qmax: " + this.qmax
-//                   + "| isIdle? " + this.isIdle
-//                   + "| isResting?" + this.isResting
-//                   + "| waitingQueueSize " + this.waitingQueue.size()
-//                   + "| nextAvailableTime " + this.nextAvailableTime + "]";
-//    }
     public String toString() {
         return "self-check " + this.serverID;
     }
-
-
-
 }

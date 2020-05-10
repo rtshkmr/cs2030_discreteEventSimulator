@@ -23,6 +23,7 @@ public class Customer implements Comparable<Customer> {
     protected int serverID; // NO_SERVER if unassigned
     protected boolean firstWaits = true;
     private final double entryTime;
+    protected final boolean isGreedy;
 
     /**
      * Constructs a Customer when the Customer enters.
@@ -38,25 +39,43 @@ public class Customer implements Comparable<Customer> {
         this.customerStatus = "arrives";
         this.serverID = NO_SERVER;
         this.entryTime = presentTime;
+        this.isGreedy = false;
+    }
+
+    /**
+     * Constructs a greedily entering customer.
+     * @param myID
+     * @param presentTime
+     * @param isGreedy
+     */
+    private Customer(int myID, double presentTime, boolean isGreedy) {
+        this.myID = myID;
+        this.presentTime = presentTime;
+        this.nextTime = presentTime; // initially set as the same upon arival
+        this.customerStatus = "arrives";
+        this.serverID = NO_SERVER;
+        this.entryTime = presentTime;
+        this.isGreedy = isGreedy; // to be set true
     }
 
     /**
      * Constructs a customer whenever there's a state change.
-     *
-     * @param myID               each customer has a unique customer ID.
+     *  @param myID               each customer has a unique customer ID.
      * @param updatedPresentTime when the current state change has happened.
      * @param updatedNextTime    when the next state change will happen.
      * @param newStatus          the newly assigned status of the customer.
      * @param serverID           the Server assigned to this customer.
+     * @param isGreedy
      */
     private Customer(int myID, double updatedPresentTime, double updatedNextTime,
-                     String newStatus, int serverID, double entryTime) {
+                     String newStatus, int serverID, double entryTime, boolean isGreedy) {
         this.myID = myID;
         this.presentTime = updatedPresentTime;
         this.nextTime = updatedNextTime;
         this.customerStatus = newStatus;
         this.serverID = serverID;
         this.entryTime = entryTime;
+        this.isGreedy = isGreedy;
     }
 
 
@@ -71,6 +90,10 @@ public class Customer implements Comparable<Customer> {
      */
     protected static Customer enter(double arrivalTime) {
         return new Customer(++CustomersEnteredCounter, arrivalTime);
+    }
+
+    protected static Customer enterGreedily(double arrivalTime) {
+        return new Customer(++CustomersEnteredCounter, arrivalTime, true);
     }
 
     /**
@@ -104,7 +127,7 @@ public class Customer implements Comparable<Customer> {
     protected Customer fromArrivesToServed(int serverID) {
         // ARRIVES to SERVED (i.e served immediately)
         return new Customer(this.myID, this.presentTime, this.presentTime,
-            "served", serverID, this.entryTime);
+            "served", serverID, this.entryTime, isGreedy);
     }
 
     /**
@@ -123,7 +146,7 @@ public class Customer implements Comparable<Customer> {
     protected Customer fromArrivesToWaits(double nextAvailableTime, int serverID) {
         Customer.TotalWaitCounter++;
         return new Customer(this.myID, this.presentTime, nextAvailableTime,
-            "waits", serverID, this.entryTime);
+            "waits", serverID, this.entryTime, isGreedy);
     }
 
     /**
@@ -134,7 +157,7 @@ public class Customer implements Comparable<Customer> {
     public Customer fromWaitsToWaits(double nextAvailableTime) {
         assert (this.customerStatus.equals("waits"));
         Customer res = new Customer(this.myID, nextAvailableTime,
-            nextAvailableTime, "waits", this.serverID, this.entryTime);
+            nextAvailableTime, "waits", this.serverID, this.entryTime, isGreedy);
         res.firstWaits = false;
         return res;
     }
@@ -155,7 +178,7 @@ public class Customer implements Comparable<Customer> {
             nextAvailableTime,
             nextAvailableTime,
             "served",
-            this.serverID, this.entryTime);
+            this.serverID, this.entryTime, isGreedy);
     }
 
     /*                        to terminal  state                               */
@@ -173,7 +196,7 @@ public class Customer implements Comparable<Customer> {
      */
     protected Customer fromServedToDone(double completionTime) {
         ++CustomersServed;
-        return new Customer(this.myID, completionTime, completionTime, "done", this.serverID, this.entryTime);
+        return new Customer(this.myID, completionTime, completionTime, "done", this.serverID, this.entryTime, isGreedy);
     }
 
     /**
@@ -187,7 +210,7 @@ public class Customer implements Comparable<Customer> {
     protected Customer fromArrivesToLeaves() {
         Customer.CustomersLeft++;
         return new Customer(this.myID, this.presentTime, this.presentTime,
-            "leaves", NO_SERVER, this.entryTime);
+            "leaves", NO_SERVER, this.entryTime, isGreedy);
     }
 
     //==========================================================================
@@ -195,13 +218,16 @@ public class Customer implements Comparable<Customer> {
 
     protected Customer reassignServer(int newServerID) {
         return new Customer(this.myID,this.getPresentTime(),this.nextTime,
-            this.customerStatus,newServerID,this.entryTime);
+            this.customerStatus,newServerID,this.entryTime, isGreedy);
     }
 
     @Override
     public String toString() {
         String status = this.customerStatus;
-        String res = prettyPrint(this.presentTime) + " " + this.myID + " " + status;
+        String res = prettyPrint(this.presentTime)
+                         + " " + this.myID
+                         +(this.isGreedy ? "(greedy)" : "")
+                         + " " + status;
         switch (status) {
             case "served":
                 res += " by ";
