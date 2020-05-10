@@ -43,28 +43,57 @@ public class Manager {
      * Else, help the customer decide and add decided customer back to queue.
      */
     public void operate() {
+
         while (!this.mainQueue.isEmpty()) {
             Customer currentCustomer = mainQueue.poll();
-            //System.out.println(">>>>>>>>> CUSTOMER: " + currentCustomer);
+            terminateRests(currentCustomer.getPresentTime());
+            // if it's last person:
+//            if(this.mainQueue.isEmpty() & !currentCustomer.firstWaits) {
+//                Server assigned = this.myServers[ currentCustomer.serverID - 1];
+//                assigned = assigned.stopResting(currentCustomer.getNextTime());
+//                this.myServers[currentCustomer.serverID - 1] = assigned;
+//            }
+
+            //Systemprintln(">>>>>>>>> CUSTOMER: " + currentCustomer);
             if (currentCustomer.firstWaits) {
                 registerEvent(currentCustomer);
-                //System.out.println("\t\t!!!event registered!");
+                //Systemprintln("\t\t!!!event registered!");
             }
-            //System.out.println("\t\t\tcurrent servers' status \n \t\t\t _________________");
+            //Systemprintln("\t\t\tcurrent servers' status \n \t\t\t _________________");
             for (Server s : this.myServers) {
-                //System.out.println("\t\t\t server: " + s);
+                //Systemprintln("\t\t\t server: " + s);
             }
-
-
             if (!isTerminalState(currentCustomer)) {
                 Customer changed = changeCustomerState(currentCustomer);
-                //System.out.println("++++++++++  CUSTOMER: " + changed + "\n\n");
+                //Systemprintln("++++++++++  CUSTOMER: " + changed + "\n\n");
                 this.mainQueue.add(changed);
             } else {
-                //System.out.println("----------  CUSTOMER: " + currentCustomer + "\n\n");
-
+                //Systemprintln("----------  CUSTOMER: " + currentCustomer + "\n\n");
+                if(isDoneState(currentCustomer)) {
+                    Server s = this.myServers[currentCustomer.serverID - 1];
+                    //Systemprintln("{done state, check resting}");
+                    //Systemprintln("Customer " + currentCustomer);
+                    //Systemprintln("assigned server" + s);
+                    double exitTime = currentCustomer.getPresentTime();
+//                    boolean needsRest = this.serverNeedsRest();
+//                    if(needsRest) {
+//                        double restUntil = this.assignRestTime(exitTime);
+//                        this.myServers[currentCustomer.serverID - 1] = s.startResting(restUntil);
+//                    }
+                    Server toInsert = serverHandlesDone(s, exitTime);
+                    this.myServers[currentCustomer.serverID - 1] = toInsert;
+                }
             }
         }
+    }
+
+    private Server serverHandlesDone(Server s, double exitTime) {
+        s = s.doneServing();
+        if(this.serverNeedsRest()) {
+            double restUntil = this.assignRestTime(exitTime);
+            s = s.startResting(restUntil);
+        }
+        return s;
     }
 
     /**
@@ -89,27 +118,27 @@ public class Manager {
                 double completionTime = this.getCompletionTime(c.getPresentTime());
                 decided = c.fromServedToDone(completionTime);
                 Server s = this.myServers[c.serverID - 1];
-                //System.out.println("Completion time: " + completionTime);
-                //System.out.println("Customer: from served to  done");
+                //Systemprintln("Completion time: " + completionTime);
+                //Systemprintln("Customer: from served to  done");
                 Server newServer = s.actuallyServeCustomer(decided.getPresentTime());
-                Server toInsert = serverNeedsRest() ? newServer.startResting(assignRestTime(completionTime))
-                        :newServer;
-                this.myServers[s.serverID - 1] = toInsert;
-
+//                Server toInsert = serverNeedsRest()
+//                        ? newServer.startResting(assignRestTime(completionTime))
+//                        : newServer;
+                this.myServers[s.serverID - 1] = newServer;
 
 
 //                if (serverNeedsRest()) {
 //                    double endOfRestTime = assignRestTime(completionTime); // rest after completion!
-//                    //System.out.println("Server: serveThenRest");
-//                    //System.out.println("end of rest time: " + endOfRestTime);
+//                    //Systemprintln("Server: serveThenRest");
+//                    //Systemprintln("end of rest time: " + endOfRestTime);
 //                    Server newServer = s.serveThenRest(endOfRestTime);
 //                    this.myServers[s.serverID - 1] = newServer;
-//                    //System.out.println("after serving, server's state  {resting}: " + newServer);
+//                    //Systemprintln("after serving, server's state  {resting}: " + newServer);
 //                } else {
-//                    //System.out.println("Server: actuallyServeCustomer");
+//                    //Systemprintln("Server: actuallyServeCustomer");
 //                    Server newServer = s.actuallyServeCustomer(decided.getPresentTime());
 //                    this.myServers[s.serverID - 1] = newServer;
-//                    //System.out.println("after serving, server's state: " + newServer);
+//                    //Systemprintln("after serving, server's state: " + newServer);
 //
 //                }
 
@@ -120,22 +149,31 @@ public class Manager {
             if (isWaitsState(c)) {
                 Server assignedServer = this.myServers[c.serverID - 1];
 
-                ////System.out.println("XXX keep waiting? " +                                       "assigned server has queuesize: " + assignedServer.waitingQueue.size());
-                ////System.out.println("    assigned server's head has customer " + assignedServer.waitingQueue.peek());
-                ////System.out.println("    assigned server's next avail " + assignedServer.nextAvailableTime);
+                ////Systemprintln("XXX keep waiting? " +                                       "assigned server has queuesize: " + assignedServer.waitingQueue.size());
+                ////Systemprintln("    assigned server's head has customer " + assignedServer.waitingQueue.peek());
+                ////Systemprintln("    assigned server's next avail " + assignedServer.nextAvailableTime);
 
 
-                // todo: need to add another condition that server is not resting
-                if (!c.equals(assignedServer.waitingQueue.peek()) && assignedServer.isResting) {
-                    ////System.out.println("XXX yes keep waiting");
+                // todo: when does a customer wait again?
+                //       if the assigned server is resting
+                //       or if he's not at the head of the queue.
+
+                if( (assignedServer.isResting /*&& !this.mainQueue.isEmpty()*/)
+                        || !assignedServer.isIdle(c.getPresentTime())
+                        || ((!c.equals(assignedServer.waitingQueue.peek())/* && assignedServer.waitingQueue.size() > 1*/)
+                )){
+
+
+
+                    ////Systemprintln("XXX yes keep waiting");
                     decided = c.fromWaitsToWaits(assignedServer.nextAvailableTime);
-                    //System.out.println("Customer: from waits to  waits");
-                    //System.out.println("Server: nothing");
+                    //Systemprintln("Customer: from waits to  waits");
+                    //Systemprintln("Server: nothing");
                 } else {
-                    ////System.out.println("XXX no change to served");
+                    ////Systemprintln("XXX no change to served");
                     decided = c.fromWaitsToServed(assignedServer.nextAvailableTime);
-                    //System.out.println("Customer: from waits to served");
-                    //System.out.println("Server: nothing");
+                    //Systemprintln("Customer: from waits to served");
+                    //Systemprintln("Server: nothing");
                 }
             }
             return decided;
@@ -144,17 +182,16 @@ public class Manager {
 
     private boolean serverNeedsRest() {
         boolean res = this.randomGenerator.genRandomRest() < this.pRest;
-        //System.out.println("Server " + (res ? "needs" : "doesn't need") + " rest");
+        //Systemprintln("Server " + (res ? "needs" : "doesn't need") + " rest");
         return res;
     }
 
     private double assignRestTime(double completionTime) {
         double restDuration = this.randomGenerator.genRestPeriod();
-        //System.out.println("finish serving at " + completionTime);
-        //System.out.println("server rests until: " + (restDuration + completionTime) );
+        //Systemprintln("finish serving at " + completionTime);
+        //Systemprintln("server rests until: " + (restDuration + completionTime) );
         return restDuration + completionTime;
     }
-
 
     /**
      * Manager queries the Servers, and modifies customers accordingly.
@@ -164,41 +201,49 @@ public class Manager {
      */
     private Customer handleArrivalState(Customer c) {
         Server[] queriedServers = queryServers(c);
-        ////System.out.println("\t---- outcome of querying the servers: ");
+        ////Systemprintln("\t---- outcome of querying the servers: ");
 //        for(Server s : queriedServers) {
-//            ////System.out.println("\t" + s);
+//            ////Systemprintln("\t" + s);
 //        }
 
 
         Customer changedCustomer; // to be assigned based on query results
         if (queriedServers[0] != null) { // idleServer exists:
             Server s = queriedServers[0];
-            ////System.out.println("\t\t!!!customer immediately assigned to " + s);
+            ////Systemprintln("\t\t!!!customer immediately assigned to " + s);
             changedCustomer = c.fromArrivesToServed(s.serverID);
-            //System.out.println("Customer: from arrives to  Served");
-            //System.out.println("Server: serveUponArrival");
+            //Systemprintln("Customer: from arrives to  Served");
+            //Systemprintln("Server: serveUponArrival");
             this.myServers[s.serverID - 1] = s.serveUponArrival();
         } else if (queriedServers[1] != null) { // queueableServer exists:
             Server s = queriedServers[1];
-            ////System.out.println("\t\t!!! to queue at this server: " + x);
+            ////Systemprintln("\t\t!!! to queue at this server: " + x);
             changedCustomer = c.fromArrivesToWaits(s.nextAvailableTime, s.serverID);
             // todo: the queable server will be non-idle so that remains,
             //       the server's nextavailable time won't change either
             //       server will add this waiting customer
             Queue<Customer> newQueue = new LinkedList<>(s.waitingQueue);
             newQueue.add(changedCustomer);
-            //System.out.println("Customer: from arrives to  waits");
-            //System.out.println("Server: addToWaitQueue");
+            //Systemprintln("Customer: from arrives to  waits");
+            //Systemprintln("Server: addToWaitQueue");
 
             this.myServers[s.serverID - 1] = s.addToWaitQueue(newQueue);
         } else { // create terminal state of leaving, server needn't bother:
-            ////System.out.println("\t\t!!! customer leaves: ");
+            ////Systemprintln("\t\t!!! customer leaves: ");
             changedCustomer = c.fromArrivesToLeaves();
-            //System.out.println("Customer: from arrives to  leaves");
-            //System.out.println("Server: nothing");
-
+            //Systemprintln("Customer: from arrives to  leaves");
+            //Systemprintln("Server: nothing");
         }
         return changedCustomer;
+    }
+
+    private void terminateRests(double now) {
+//        for (Server s : this.myServers) {
+//            s = s.stopResting(now);
+//        }
+        for(int i = 0; i < this.myServers.length; i++) {
+            this.myServers[i] = this.myServers[i].stopResting(now);
+        }
     }
 
 
@@ -206,18 +251,18 @@ public class Manager {
     private Server[] queryServers(Customer c) {
         // gather relevant servers:
         Optional<Server> idleServer = Optional.empty(),
-                queueableServer = Optional.empty(),
-                shortestServer = Optional.empty();
+            queueableServer = Optional.empty(),
+            shortestServer = Optional.empty();
         boolean foundIdle = false, foundQueueable = false;
         // todo: boolean checks whether s.isIdle and s.canQueue
-        ////System.out.println("customer: " + c);
+        ////Systemprintln("customer: " + c);
         for (Server s : this.myServers) {
 //            boolean ans1 = s.isIdle(c);
 //            boolean ans2 = s.canQueue(c);
-//            ////System.out.println("\t\tisIdle?" + ans1);
-//            ////System.out.println("\t\tcanQueue?" + ans2);
-            ////System.out.println("\tSERVER STATUS WHEN QUERYING: " + s);
-            ////System.out.println("\t\t****server qsize / qmax: " + s.waitingQueue.size() + "/"+ s.qmax);
+//            ////Systemprintln("\t\tisIdle?" + ans1);
+//            ////Systemprintln("\t\tcanQueue?" + ans2);
+            ////Systemprintln("\tSERVER STATUS WHEN QUERYING: " + s);
+            ////Systemprintln("\t\t****server qsize / qmax: " + s.waitingQueue.size() + "/"+ s.qmax);
             double now = c.getPresentTime();
             s = s.stopResting(now);
 
@@ -237,8 +282,8 @@ public class Manager {
             }
         }
         return new Server[]{idleServer.orElse(null),
-                queueableServer.orElse(null),
-                shortestServer.orElse(null)};
+            queueableServer.orElse(null),
+            shortestServer.orElse(null)};
     }
 
     /**

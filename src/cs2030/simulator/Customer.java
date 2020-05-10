@@ -80,10 +80,10 @@ public class Customer implements Comparable<Customer> {
      */
     protected static String customerStats() {
         double averageWaitingTime =
-                (CustomersServed == 0 || TotalWaitingTime == 0)
-                        ? 0 : Customer.TotalWaitingTime / Customer.CustomersServed;
+            (CustomersServed == 0 || TotalWaitingTime == 0)
+                ? 0 : Customer.TotalWaitingTime / Customer.CustomersServed;
         return "[" + prettyPrint(averageWaitingTime) + " "
-                + CustomersServed + " " + (CustomersEnteredCounter - CustomersServed) + "]";
+                   + CustomersServed + " " + (CustomersEnteredCounter - CustomersServed) + "]";
     }
 
 
@@ -104,7 +104,7 @@ public class Customer implements Comparable<Customer> {
     protected Customer fromArrivesToServed(int serverID) {
         // ARRIVES to SERVED (i.e served immediately)
         return new Customer(this.myID, this.presentTime, this.presentTime,
-                "served", serverID, this.entryTime);
+            "served", serverID, this.entryTime);
     }
 
     /**
@@ -123,7 +123,7 @@ public class Customer implements Comparable<Customer> {
     protected Customer fromArrivesToWaits(double nextAvailableTime, int serverID) {
         Customer.TotalWaitCounter++;
         return new Customer(this.myID, this.presentTime, nextAvailableTime,
-                "waits", serverID, this.entryTime);
+            "waits", serverID, this.entryTime);
     }
 
     /**
@@ -134,10 +134,8 @@ public class Customer implements Comparable<Customer> {
     public Customer fromWaitsToWaits(double nextAvailableTime) {
         assert (this.customerStatus.equals("waits"));
         Customer res = new Customer(this.myID, nextAvailableTime,
-                nextAvailableTime, "waits", this.serverID, this.entryTime);
-//        if (firstWaits) {
+            nextAvailableTime, "waits", this.serverID, this.entryTime);
         res.firstWaits = false;
-//        }
         return res;
     }
 
@@ -154,10 +152,10 @@ public class Customer implements Comparable<Customer> {
         Customer.TotalWaitingTime += (nextAvailableTime - this.entryTime);
         // will def be served if there's no one else waiting:
         return new Customer(this.myID,
-                nextAvailableTime,
-                nextAvailableTime,
-                "served",
-                this.serverID, this.entryTime);
+            nextAvailableTime,
+            nextAvailableTime,
+            "served",
+            this.serverID, this.entryTime);
     }
 
     /*                        to terminal  state                               */
@@ -189,7 +187,7 @@ public class Customer implements Comparable<Customer> {
     protected Customer fromArrivesToLeaves() {
         Customer.CustomersLeft++;
         return new Customer(this.myID, this.presentTime, this.presentTime,
-                "leaves", NO_SERVER, this.entryTime);
+            "leaves", NO_SERVER, this.entryTime);
     }
 
     //==========================================================================

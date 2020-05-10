@@ -12,7 +12,7 @@ import java.util.Queue;
 public class Server {
 
     protected final int serverID;
-    private final boolean isIdle;
+    protected final boolean isIdle;
     protected final double nextAvailableTime;
     protected final int qmax;
     protected final Queue<Customer> waitingQueue; // to restrict size to qmax
@@ -61,7 +61,7 @@ public class Server {
     // todo: this feels wrong, can't wrap my head around it.
     protected boolean isIdle(double arrivalTime) {
         boolean ans = !this.isResting && this.isIdle && arrivalTime >= this.nextAvailableTime;
-        //System.out.println("\t\tisIdle?" + ans);
+        ////System.out.println("\t\tisIdle?" + ans);
         return ans;
     }
 
@@ -73,15 +73,15 @@ public class Server {
      */
     protected boolean canQueue(double arrivalTime) {
         boolean ans = arrivalTime < this.nextAvailableTime
-                && this.waitingQueue.size() < this.qmax;
-        //System.out.println("\t\tcanQueue?" + ans);
+                          && this.waitingQueue.size() < this.qmax;
+        ////System.out.println("\t\tcanQueue?" + ans);
         return ans;
 //        return !this.isIdle(c) && this.waitingQueue.size() < qmax;
 ////        return !this.isIdle && !this.hasCustomerWaiting;
 //        boolean ans =  /*!this.isIdle*/!isIdle(potentialCustomer) && this.waitingQueue.size() < this.qmax;
 //        // todo: a customer can wait for a server if the server's queue is not full
-//        //System.out.println(this);
-//        //System.out.println("canServeNext( " + potentialCustomer + ") ? " + ans);
+//        ////System.out.println(this);
+//        ////System.out.println("canServeNext( " + potentialCustomer + ") ? " + ans);
 //        return ans;
     }
 
@@ -94,8 +94,8 @@ public class Server {
     public Server serveUponArrival() {
         assert this.waitingQueue.isEmpty();
         return new Server(this.serverID, this.qmax, false, false,
-                this.nextAvailableTime,
-                this.waitingQueue);
+            this.nextAvailableTime,
+            this.waitingQueue);
     }
 
     /**
@@ -112,7 +112,7 @@ public class Server {
     public Server addToWaitQueue(Queue<Customer> newQueue) {
         assert !this.isIdle;
         return new Server(this.serverID, this.qmax, this.isIdle, false,
-                this.nextAvailableTime, newQueue);
+            this.nextAvailableTime, newQueue);
     }
 
 
@@ -130,16 +130,26 @@ public class Server {
     public Server actuallyServeCustomer(double presentTime) {
         assert !this.isIdle;
         if (this.waitingQueue.isEmpty()) { // means the doneCustomer wasn't waiting
-            return new Server(this.serverID, this.qmax, true, false,
-                    presentTime, this.waitingQueue);
+            return new Server(this.serverID, this.qmax, false, false,
+                presentTime, this.waitingQueue);
         } else { // doneCustomer was waiting, we modify the queue as well
             // todo: we compare idx first, if possible change to using the equals method.
             Queue<Customer> newQueue = new LinkedList<>(this.waitingQueue);
             newQueue.remove();
-            return new Server(this.serverID, this.qmax, newQueue.isEmpty(), false,
-                    presentTime, newQueue);
+            return new Server(this.serverID, this.qmax, /*newQueue.isEmpty()*/ false, false,
+                presentTime, newQueue);
         }
     }
+
+    public Server doneServing() {
+        return new Server(this.serverID,
+            this.qmax,
+            true,
+            false,
+            this.nextAvailableTime,
+            this.waitingQueue);
+    }
+
 
     // todo: take a rest server (double endOfRestTime)
     //        i'm going to attempt to just modify the nextAvailable time instead..
@@ -147,28 +157,31 @@ public class Server {
         assert !this.isIdle;
         if (this.waitingQueue.isEmpty()) { // means the doneCustomer wasn't waiting
             return new Server(this.serverID, this.qmax, true, true,
-                    endOfRest, this.waitingQueue);
+                endOfRest, this.waitingQueue);
         } else { // doneCustomer was waiting, we modify the queue as well
             // todo: we compare idx first, if possible change to using the equals method.
             Queue<Customer> newQueue = new LinkedList<>(this.waitingQueue);
             newQueue.remove();
             return new Server(this.serverID, this.qmax, newQueue.isEmpty(), true,
-                    endOfRest, newQueue);
+                endOfRest, newQueue);
         }
     }
 
     protected Server startResting(double restUntil) {
-        return new Server(this.serverID,
-                this.qmax,
-                this.isIdle, true,
-                restUntil,
-                this.waitingQueue);
+        Server s =  new Server(this.serverID,
+            this.qmax,
+            true, true,
+            restUntil,
+            this.waitingQueue);
+        //System.out.println("{start resting! }" + s);
+        return s;
     }
 
     protected Server stopResting(double now) {
         if (now >= this.nextAvailableTime) {
+            //System.out.println("{stop resting! }" + this);
             return new Server(this.serverID, this.qmax, this.isIdle, false,
-                    this.nextAvailableTime, this.waitingQueue);
+                this.nextAvailableTime, this.waitingQueue);
         } else return this;
     }
 
@@ -179,10 +192,10 @@ public class Server {
     @Override
     public String toString() {
         return "Server [serverID " + this.serverID
-                + "| qmax: " + this.qmax
-                + "| isIdle? " + this.isIdle
-                + "| isResting?" + this.isResting
-                + "| waitingQueueSize " + this.waitingQueue.size()
-                + "| nextAvailableTime " + this.nextAvailableTime + "]";
+                   + "| qmax: " + this.qmax
+                   + "| isIdle? " + this.isIdle
+                   + "| isResting?" + this.isResting
+                   + "| waitingQueueSize " + this.waitingQueue.size()
+                   + "| nextAvailableTime " + this.nextAvailableTime + "]";
     }
 }
