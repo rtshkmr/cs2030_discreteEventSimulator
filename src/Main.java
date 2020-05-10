@@ -18,6 +18,7 @@ public class Main {
         Scanner sc = new Scanner(System.in);
         int seed = sc.nextInt();
         int numServers = sc.nextInt();
+        int numSelfServers = sc.nextInt();
         int qmax = sc.nextInt();
         int numArrivalEvents = sc.nextInt(); // aka number of customers expected to enter
         double lambda = sc.nextDouble();
@@ -40,6 +41,7 @@ public class Main {
 
         Manager myManager = new Manager(seed,
             numServers,
+            numSelfServers,
             qmax,
             numArrivalEvents,
             lambda,

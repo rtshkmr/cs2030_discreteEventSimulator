@@ -193,19 +193,24 @@ public class Customer implements Comparable<Customer> {
     //==========================================================================
 
 
+    protected Customer reassignServer(int newServerID) {
+        return new Customer(this.myID,this.getPresentTime(),this.nextTime,
+            this.customerStatus,newServerID,this.entryTime);
+    }
+
     @Override
     public String toString() {
         String status = this.customerStatus;
         String res = prettyPrint(this.presentTime) + " " + this.myID + " " + status;
         switch (status) {
             case "served":
-                res += " by server " + this.serverID;
+                res += " by ";
                 break;
             case "done":
-                res += " serving by server " + this.serverID;
+                res += " serving by ";
                 break;
             case "waits":
-                res += " to be served by server " + this.serverID;
+                res += " to be served by ";
                 break;
             default:
                 res += "";

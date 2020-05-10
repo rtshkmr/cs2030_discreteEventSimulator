@@ -58,7 +58,6 @@ public class Server {
      * @param arrivalTime the time the customer arrives
      * @return true if Server can serve the potentialCustomer immediately
      */
-    // todo: this feels wrong, can't wrap my head around it.
     protected boolean isIdle(double arrivalTime) {
         boolean ans = !this.isResting && this.isIdle && arrivalTime >= this.nextAvailableTime;
         ////System.out.println("\t\tisIdle?" + ans);
@@ -189,13 +188,21 @@ public class Server {
     // todo: back to work server ()
 
 
+    protected int getQueueSize() {
+        return this.waitingQueue.size();
+    }
+
     @Override
+//    public String toString() {
+//        return "Server [serverID " + this.serverID
+//                   + "| qmax: " + this.qmax
+//                   + "| isIdle? " + this.isIdle
+//                   + "| isResting?" + this.isResting
+//                   + "| waitingQueueSize " + this.waitingQueue.size()
+//                   + "| nextAvailableTime " + this.nextAvailableTime + "]";
+//    }
+//
     public String toString() {
-        return "Server [serverID " + this.serverID
-                   + "| qmax: " + this.qmax
-                   + "| isIdle? " + this.isIdle
-                   + "| isResting?" + this.isResting
-                   + "| waitingQueueSize " + this.waitingQueue.size()
-                   + "| nextAvailableTime " + this.nextAvailableTime + "]";
+        return "server " + this.serverID;
     }
 }
